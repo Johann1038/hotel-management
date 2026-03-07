@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Booking Confirmed — {{ hotel_name }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f0e8;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+      <!-- Header -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#080806,#141208);border-radius:16px 16px 0 0;padding:40px 48px;text-align:center;">
+          <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#c9a84c;letter-spacing:3px;">GRAND HOTEL</div>
+          <div style="font-size:11px;color:rgba(245,240,232,.4);letter-spacing:4px;text-transform:uppercase;margin-top:4px;">Luxury &amp; Comfort</div>
+          <div style="width:50px;height:2px;background:linear-gradient(90deg,#c9a84c,#a0b86a);margin:20px auto 0;"></div>
+        </td>
+      </tr>
+
+      <!-- Confirmation badge -->
+      <tr>
+        <td style="background:#0f0f0c;padding:32px 48px 0;text-align:center;">
+          <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.3);line-height:64px;font-size:28px;margin-bottom:16px;">✓</div>
+          <h1 style="font-family:Georgia,serif;font-size:26px;font-weight:600;color:#f5f0e8;margin:0 0 8px;">Booking Confirmed!</h1>
+          <p style="font-size:14px;color:rgba(245,240,232,.45);margin:0;">Your reservation has been successfully created.</p>
+        </td>
+      </tr>
+
+      <!-- Booking card -->
+      <tr>
+        <td style="background:#0f0f0c;padding:28px 48px;">
+          <table width="100%" cellpadding="0" cellspacing="0"
+            style="background:rgba(245,240,232,.04);border:1px solid rgba(245,240,232,.08);border-radius:12px;overflow:hidden;">
+            <tr>
+              <td style="padding:20px 24px;border-bottom:1px solid rgba(245,240,232,.06);">
+                <span style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1.5px;">Booking ID</span>
+                <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;margin-top:2px;">#{{ booking.id }}</div>
+              </td>
+              <td style="padding:20px 24px;border-bottom:1px solid rgba(245,240,232,.06);text-align:right;">
+                <span style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;">Confirmed</span>
+              </td>
+            </tr>
+            <tr><td colspan="2" style="padding:20px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="50%" style="padding-bottom:16px;vertical-align:top;">
+                    <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Guest</div>
+                    <div style="font-size:15px;font-weight:600;color:#f5f0e8;">{{ booking.guest.name }}</div>
+                    <div style="font-size:12px;color:rgba(245,240,232,.45);margin-top:2px;">{{ booking.guest.email }}</div>
+                  </td>
+                  <td width="50%" style="padding-bottom:16px;vertical-align:top;">
+                    <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Room Type</div>
+                    <div style="font-size:15px;font-weight:600;color:#c9a84c;text-transform:capitalize;">{{ booking.room.room_type }}</div>
+                    <div style="font-size:12px;color:rgba(245,240,232,.4);margin-top:2px;">Auto-assigned at check-in</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="50%" style="padding-bottom:16px;vertical-align:top;">
+                    <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Check-in</div>
+                    <div style="font-size:15px;font-weight:600;color:#f5f0e8;">{{ booking.check_in }}</div>
+                  </td>
+                  <td width="50%" style="padding-bottom:16px;vertical-align:top;">
+                    <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Check-out</div>
+                    <div style="font-size:15px;font-weight:600;color:#f5f0e8;">{{ booking.check_out }}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td width="50%" style="vertical-align:top;">
+                    <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Guests</div>
+                    <div style="font-size:14px;color:#f5f0e8;">{{ booking.adults }} adult{{ booking.adults|pluralize }}{% if booking.children %}, {{ booking.children }} child{% endif %}</div>
+                  </td>
+                  <td width="50%" style="vertical-align:top;">
+                    <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Duration</div>
+                    <div style="font-size:14px;color:#f5f0e8;">{{ booking.nights }} night{{ booking.nights|pluralize }}</div>
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+
+            <!-- Rooms + Price -->
+            <tr><td colspan="2" style="padding:16px 24px;border-top:1px solid rgba(245,240,232,.06);background:rgba(201,168,76,.04);">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                {% for b in all_bookings %}
+                <tr>
+                  <td style="font-size:13px;color:rgba(245,240,232,.6);padding-bottom:4px;text-transform:capitalize;">
+                    {% if all_bookings|length > 1 %}Room {{ forloop.counter }}: {% endif %}{{ b.room.room_type }}
+                    — {{ b.nights }} night{{ b.nights|pluralize }} × ₹{{ b.room.price_per_night }}
+                  </td>
+                  <td style="font-size:13px;color:rgba(245,240,232,.6);text-align:right;padding-bottom:4px;">₹{{ b.base_price }}</td>
+                </tr>
+                {% endfor %}
+                {% if booking.discount_percent > 0 %}
+                <tr>
+                  <td style="font-size:13px;color:#4ade80;padding-top:6px;padding-bottom:6px;">Discount ({{ booking.discount_percent }}% off)</td>
+                  <td style="font-size:13px;color:#4ade80;text-align:right;padding-top:6px;padding-bottom:6px;">applied per room</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <td style="font-size:15px;font-weight:700;color:#f5f0e8;border-top:1px solid rgba(245,240,232,.08);padding-top:10px;">
+                    Total{% if all_bookings|length > 1 %} ({{ all_bookings|length }} rooms){% endif %}
+                  </td>
+                  <td style="font-size:18px;font-weight:700;color:#c9a84c;text-align:right;border-top:1px solid rgba(245,240,232,.08);padding-top:10px;">
+                    ₹{% for b in all_bookings %}{{ b.final_price }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                  </td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Note -->
+      <tr>
+        <td style="background:#0f0f0c;padding:0 48px 32px;">
+          <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:10px;padding:16px 20px;">
+            <p style="font-size:13px;color:rgba(245,240,232,.55);margin:0;line-height:1.6;">
+              ℹ️ &nbsp;Please arrive at the front desk with a valid ID. Your room will be ready from 2:00 PM on your check-in date.
+            </p>
+          </div>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="background:#080806;border-radius:0 0 16px 16px;padding:24px 48px;text-align:center;border-top:1px solid rgba(245,240,232,.05);">
+          <div style="font-family:Georgia,serif;font-size:16px;color:#c9a84c;font-weight:700;letter-spacing:2px;">GRAND HOTEL</div>
+          <p style="font-size:12px;color:rgba(245,240,232,.25);margin:8px 0 0;">Where every stay becomes a cherished memory.</p>
+          <p style="font-size:11px;color:rgba(245,240,232,.2);margin:6px 0 0;">
+            Questions? Reply to this email or contact <a href="mailto:{{ hotel_email }}" style="color:#c9a84c;text-decoration:none;">{{ hotel_email }}</a>
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

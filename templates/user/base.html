@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Grand Hotel{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c; --gold-l: #e8c96d; --gold-d: #a07830;
+      --olive: #5a6b32; --olive-l: #7a9045; --olive-ll: #a0b86a;
+      --black: #080806; --dark: #0f0f0c;
+      --white: #f5f0e8; --white-d: rgba(245,240,232,.6);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: var(--black); color: var(--white); overflow-x: hidden; }
+    h1,h2,h3,h4 { font-family: 'Cormorant Garamond', serif; }
+
+    /* ── Video background ── */
+    .video-bg {
+      position: fixed; inset: 0; z-index: -3; overflow: hidden;
+    }
+    .video-bg video {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: brightness(.28) saturate(.7);
+    }
+    .video-overlay {
+      position: fixed; inset: 0; z-index: -2;
+      background:
+        linear-gradient(to bottom, rgba(8,8,6,.55) 0%, rgba(8,8,6,.2) 40%, rgba(8,8,6,.6) 100%),
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(201,168,76,.06) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 80% 70%, rgba(90,107,50,.05) 0%, transparent 65%);
+    }
+    #pcv { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+    /* ── Navbar ── */
+    .site-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 20px 52px; display: flex; align-items: center; justify-content: space-between;
+      transition: all .4s ease;
+    }
+    .site-nav.scrolled {
+      background: rgba(8,8,6,.92); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(201,168,76,.12); padding: 12px 52px;
+    }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 700; color: var(--gold); text-decoration: none; letter-spacing: 2px; }
+    .nav-logo span { font-size: .6rem; display: block; color: rgba(245,240,232,.3); letter-spacing: 4px; text-transform: uppercase; font-family: 'Poppins', sans-serif; font-weight: 400; }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a { color: rgba(245,240,232,.55); text-decoration: none; font-size: .84rem; transition: color .25s; letter-spacing: .5px; }
+    .nav-links a:hover, .nav-links a.active { color: var(--white); }
+    .btn-book-nav {
+      background: linear-gradient(135deg, var(--gold), var(--gold-l));
+      color: #000 !important; padding: 9px 22px; border-radius: 6px;
+      font-weight: 600; font-size: .82rem; transition: all .3s ease !important;
+    }
+    .btn-book-nav:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,168,76,.35); }
+    .btn-staff-nav {
+      display: flex; align-items: center; gap: 7px;
+      color: rgba(245,240,232,.3) !important; font-size: .75rem !important;
+      border: 1px solid rgba(245,240,232,.1); padding: 7px 14px !important;
+      border-radius: 6px; transition: all .25s ease !important;
+    }
+    .btn-staff-nav:hover { color: var(--olive-ll) !important; border-color: rgba(160,184,106,.3) !important; background: rgba(90,107,50,.08); }
+
+    /* ── Buttons ── */
+    .btn-gold { display: inline-block; background: linear-gradient(135deg, var(--gold), var(--gold-l)); color: #000; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: .9rem; text-decoration: none; transition: all .3s ease; border: none; cursor: pointer; font-family: 'Poppins', sans-serif; }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(201,168,76,.35); color: #000; }
+    .btn-outline { display: inline-block; background: transparent; color: rgba(245,240,232,.75); padding: 13px 32px; border-radius: 6px; font-size: .9rem; text-decoration: none; border: 1px solid rgba(245,240,232,.25); transition: all .3s ease; font-family: 'Poppins', sans-serif; }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.06); }
+
+    /* ── Glass card ── */
+    .g-card { background: rgba(245,240,232,.04); border: 1px solid rgba(245,240,232,.08); border-radius: 16px; backdrop-filter: blur(12px); transition: all .35s ease; }
+    .g-card:hover { border-color: rgba(201,168,76,.35); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(90,107,50,.1); }
+
+    /* ── Room cards ── */
+    .room-img { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; transition: transform .4s ease; overflow: hidden; }
+    .g-card:hover .room-img { transform: scale(1.05); }
+    .standard-bg { background: linear-gradient(135deg, rgba(15,15,12,.9), rgba(28,28,20,.9)); }
+    .deluxe-bg   { background: linear-gradient(135deg, rgba(90,107,50,.25), rgba(15,15,12,.9)); }
+    .suite-bg    { background: linear-gradient(135deg, rgba(201,168,76,.2), rgba(15,15,12,.9)); }
+    .room-price { font-size: 1.3rem; font-weight: 700; color: var(--gold); }
+    .room-price span { font-size: .7rem; font-weight: 400; color: rgba(245,240,232,.35); }
+
+    /* ── Forms ── */
+    .form-label { font-size: .7rem; color: rgba(245,240,232,.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; display: block; }
+    .form-control, .form-select { background: rgba(245,240,232,.04); border: 1px solid rgba(245,240,232,.1); border-radius: 8px; color: var(--white); padding: 12px 16px; font-family: 'Poppins', sans-serif; font-size: .875rem; width: 100%; transition: all .25s; }
+    .form-control:focus, .form-select:focus { background: rgba(245,240,232,.07); border-color: rgba(201,168,76,.45); box-shadow: 0 0 0 3px rgba(201,168,76,.08); color: var(--white); outline: none; }
+    .form-select option { background: #0f0f0c; }
+    .form-control::placeholder { color: rgba(245,240,232,.2); }
+
+    /* ── Misc ── */
+    .gold-line { width: 60px; height: 2px; background: linear-gradient(90deg, var(--gold), var(--olive-l)); margin: 12px 0 20px; }
+    .gold-line.center { margin: 12px auto 20px; }
+    .section { padding: 96px 0; }
+    .section-sm { padding: 64px 0; }
+    .section-title { font-size: 2.4rem; font-weight: 600; color: var(--white); }
+    .section-sub { color: rgba(245,240,232,.38); font-size: .88rem; margin-top: 8px; }
+    .type-badge { display: inline-block; background: rgba(90,107,50,.15); border: 1px solid rgba(90,107,50,.3); color: var(--olive-ll); font-size: .65rem; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; }
+    .gold { color: var(--gold); }
+    .olive { color: var(--olive-ll); }
+    .pt-nav { padding-top: 88px; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(201,168,76,.18); border-radius: 3px; }
+
+    /* ── Footer ── */
+    footer { background: rgba(8,8,6,.88); border-top: 1px solid rgba(245,240,232,.06); padding: 40px 0 24px; }
+    footer .f-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold); font-weight: 700; letter-spacing: 2px; }
+    footer p { color: rgba(245,240,232,.28); font-size: .78rem; margin-top: 8px; }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Video Background -->
+<div class="video-bg">
+  <video autoplay muted loop playsinline>
+    <source src="/static/hotel.mp4" type="video/mp4">
+  </video>
+</div>
+<div class="video-overlay"></div>
+<canvas id="pcv"></canvas>
+
+<!-- Navbar -->
+<nav class="site-nav" id="siteNav">
+  <a href="{% url 'user_home' %}" class="nav-logo">GRAND HOTEL<span>Luxury & Comfort</span></a>
+  <div class="nav-links">
+    <a href="{% url 'user_home' %}" class="{% block al_home %}{% endblock %}">Home</a>
+    <a href="{% url 'user_rooms' %}" class="{% block al_rooms %}{% endblock %}">Rooms</a>
+    <a href="{% url 'user_book' %}" class="btn-book-nav {% block al_book %}{% endblock %}">Book Now</a>
+    <a href="{% url 'staff_login' %}" class="btn-staff-nav">
+      <i class="fas fa-lock" style="font-size:.7rem;"></i>Staff Login
+    </a>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <div class="f-logo"><i class="fas fa-crown me-2"></i>Grand Hotel</div>
+        <p>Where every stay becomes a cherished memory.</p>
+      </div>
+      <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <p style="color:rgba(245,240,232,.2);font-size:.72rem;">© 2026 Grand Hotel. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+AOS.init({ duration: 600, once: true, offset: 60 });
+window.addEventListener('scroll', () => {
+  document.getElementById('siteNav').classList.toggle('scrolled', scrollY > 50);
+});
+
+// Particles — gold + olive
+const cv = document.getElementById('pcv'), cx = cv.getContext('2d');
+function rsz() { cv.width = innerWidth; cv.height = innerHeight; }
+rsz(); window.addEventListener('resize', rsz);
+const pts = Array.from({length: 60}, () => ({
+  x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+  s: Math.random()*1.5+.3, vx: (Math.random()-.5)*.18, vy: (Math.random()-.5)*.18,
+  o: Math.random()*.18+.03, t: Math.floor(Math.random()*3)
+}));
+const colors = [
+  p=>`rgba(201,168,76,${p.o})`,
+  p=>`rgba(160,184,106,${p.o})`,
+  p=>`rgba(245,240,232,${p.o*.6})`,
+];
+(function loop() {
+  cx.clearRect(0,0,cv.width,cv.height);
+  pts.forEach(p => {
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>cv.width||p.y<0||p.y>cv.height){ p.x=Math.random()*cv.width; p.y=Math.random()*cv.height; }
+    cx.beginPath(); cx.arc(p.x,p.y,p.s,0,Math.PI*2);
+    cx.fillStyle=colors[p.t](p); cx.fill();
+  });
+  requestAnimationFrame(loop);
+})();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

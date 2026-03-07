@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Login — Grand Hotel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9a84c; --gold-l: #e8c96d;
+      --olive: #5a6b32; --olive-l: #7a9045; --olive-ll: #a0b86a;
+      --black: #080806; --dark: #0f0f0c; --dark2: #161610;
+      --white: #f5f0e8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--black);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Aurora background */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: linear-gradient(-45deg, #080806, #0f0f0c, #141208, #0a0a08);
+      background-size: 400% 400%; animation: aurora 20s ease infinite;
+    }
+    @keyframes aurora { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+    .bg-glow {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 50% at 15% 40%, rgba(201,168,76,.08) 0%, transparent 65%),
+        radial-gradient(ellipse 45% 55% at 85% 60%, rgba(90,107,50,.07) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 40% at 50% 10%, rgba(201,168,76,.04) 0%, transparent 60%);
+      animation: glow 14s ease-in-out infinite alternate;
+    }
+    @keyframes glow { 0%{transform:translateX(-12px) scale(1)} 100%{transform:translateX(12px) scale(1.04)} }
+
+    #pcv { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* Split layout */
+    .login-wrap {
+      position: relative; z-index: 10;
+      display: flex; width: 100%; max-width: 900px; min-height: 540px;
+      border-radius: 20px; overflow: hidden;
+      border: 1px solid rgba(201,168,76,.2);
+      box-shadow: 0 32px 80px rgba(0,0,0,.6);
+    }
+
+    /* Left panel */
+    .left-panel {
+      flex: 1; padding: 56px 48px;
+      background: linear-gradient(160deg, rgba(90,107,50,.18) 0%, rgba(8,8,6,.6) 60%);
+      backdrop-filter: blur(8px);
+      border-right: 1px solid rgba(201,168,76,.12);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .brand h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700; color: var(--gold); letter-spacing: 2px; }
+    .brand p { font-size: .7rem; color: rgba(245,240,232,.35); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+    .panel-tagline { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 600; color: var(--white); line-height: 1.2; }
+    .panel-tagline em { color: var(--gold); font-style: normal; }
+    .panel-sub { font-size: .82rem; color: rgba(245,240,232,.38); margin-top: 12px; line-height: 1.7; }
+    .olive-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--olive-ll); animation: odot 2s ease-in-out infinite; display: inline-block; }
+    @keyframes odot { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* Right panel (form) */
+    .right-panel {
+      width: 380px; padding: 52px 44px;
+      background: rgba(15,15,12,.92);
+      backdrop-filter: blur(20px);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .form-head { margin-bottom: 32px; }
+    .form-head h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 600; color: var(--white); }
+    .form-head p { font-size: .78rem; color: rgba(245,240,232,.35); margin-top: 6px; }
+    .gold-line { width: 40px; height: 2px; background: linear-gradient(90deg, var(--gold), var(--olive-l)); margin: 10px 0 0; }
+
+    .field { margin-bottom: 20px; }
+    .field label { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(245,240,232,.4); margin-bottom: 8px; }
+    .field-wrap { position: relative; }
+    .field-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: rgba(245,240,232,.25); font-size: .82rem; }
+    .field input {
+      width: 100%; padding: 12px 14px 12px 38px;
+      background: rgba(245,240,232,.04); border: 1px solid rgba(245,240,232,.1);
+      border-radius: 8px; color: var(--white); font-family: 'Poppins', sans-serif; font-size: .875rem;
+      transition: all .25s;
+    }
+    .field input:focus { outline: none; border-color: rgba(201,168,76,.5); background: rgba(245,240,232,.06); box-shadow: 0 0 0 3px rgba(201,168,76,.08); }
+    .field input::placeholder { color: rgba(245,240,232,.2); }
+
+    /* Error */
+    .error-msg { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25); color: #f87171; font-size: .78rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%; padding: 13px; border: none; border-radius: 8px; cursor: pointer;
+      background: linear-gradient(135deg, var(--gold), var(--gold-l));
+      color: #000; font-weight: 600; font-size: .9rem; font-family: 'Poppins', sans-serif;
+      transition: all .3s ease; position: relative; overflow: hidden;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,168,76,.3); }
+    .btn-submit::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, var(--olive-l), var(--gold)); opacity: 0; transition: opacity .3s; }
+    .btn-submit:hover::after { opacity: .3; }
+
+    .back-link { display: block; text-align: center; margin-top: 20px; font-size: .78rem; color: rgba(245,240,232,.28); text-decoration: none; transition: color .25s; }
+    .back-link:hover { color: var(--olive-ll); }
+
+    @media (max-width: 680px) {
+      .left-panel { display: none; }
+      .right-panel { width: 100%; border-radius: 20px; }
+      .login-wrap { max-width: 420px; border-radius: 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-glow"></div>
+<canvas id="pcv"></canvas>
+
+<div class="login-wrap">
+  <!-- Left -->
+  <div class="left-panel">
+    <div class="brand">
+      <h2><i class="fas fa-crown me-2"></i>Grand Hotel</h2>
+      <p>Staff Portal</p>
+    </div>
+    <div>
+      <div class="panel-tagline">Manage with<br><em>Excellence</em></div>
+      <p class="panel-sub">Access the hotel management dashboard to oversee rooms, guests, and reservations in real time.</p>
+      <div style="margin-top:24px;display:flex;align-items:center;gap:8px;">
+        <span class="olive-dot"></span>
+        <span style="font-size:.72rem;color:rgba(245,240,232,.3);letter-spacing:1px;">System Live</span>
+      </div>
+    </div>
+    <div style="font-size:.7rem;color:rgba(245,240,232,.2);">© 2026 Grand Hotel Management</div>
+  </div>
+
+  <!-- Right -->
+  <div class="right-panel">
+    <div class="form-head">
+      <h3>Staff Sign In</h3>
+      <p>Enter your credentials to access the dashboard.</p>
+      <div class="gold-line"></div>
+    </div>
+
+    {% if error %}
+    <div class="error-msg"><i class="fas fa-exclamation-circle"></i>{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="field">
+        <label>Username</label>
+        <div class="field-wrap">
+          <i class="fas fa-user"></i>
+          <input type="text" name="username" placeholder="Enter username" autofocus required>
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="field-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" name="password" placeholder="Enter password" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit"><i class="fas fa-arrow-right-to-bracket me-2"></i>Sign In</button>
+    </form>
+
+    <a href="{% url 'user_home' %}" class="back-link"><i class="fas fa-arrow-left me-1"></i>Back to Hotel Website</a>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('pcv'), cx = cv.getContext('2d');
+function rsz() { cv.width = innerWidth; cv.height = innerHeight; }
+rsz(); window.addEventListener('resize', rsz);
+const pts = Array.from({length: 60}, () => ({
+  x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+  s: Math.random()*1.5+.3, vx: (Math.random()-.5)*.18, vy: (Math.random()-.5)*.18,
+  o: Math.random()*.2+.03, g: Math.random()>.6
+}));
+(function loop() {
+  cx.clearRect(0,0,cv.width,cv.height);
+  pts.forEach(p => {
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>cv.width||p.y<0||p.y>cv.height){ p.x=Math.random()*cv.width; p.y=Math.random()*cv.height; }
+    cx.beginPath(); cx.arc(p.x,p.y,p.s,0,Math.PI*2);
+    cx.fillStyle = p.g ? `rgba(201,168,76,${p.o})` : `rgba(160,184,106,${p.o})`;
+    cx.fill();
+  });
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

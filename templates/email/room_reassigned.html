@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Room Update — {{ hotel_name }}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f0e8;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+      <!-- Header -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#080806,#141208);border-radius:16px 16px 0 0;padding:40px 48px;text-align:center;">
+          <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#c9a84c;letter-spacing:3px;">GRAND HOTEL</div>
+          <div style="font-size:11px;color:rgba(245,240,232,.4);letter-spacing:4px;text-transform:uppercase;margin-top:4px;">Luxury &amp; Comfort</div>
+          <div style="width:50px;height:2px;background:linear-gradient(90deg,#c9a84c,#a0b86a);margin:20px auto 0;"></div>
+        </td>
+      </tr>
+
+      <!-- Alert icon -->
+      <tr>
+        <td style="background:#0f0f0c;padding:32px 48px 0;text-align:center;">
+          <div style="display:inline-block;width:64px;height:64px;border-radius:50%;background:rgba(251,191,36,.1);border:2px solid rgba(251,191,36,.3);line-height:64px;font-size:26px;margin-bottom:16px;">🔄</div>
+          <h1 style="font-family:Georgia,serif;font-size:24px;font-weight:600;color:#f5f0e8;margin:0 0 8px;">Room Update</h1>
+          <p style="font-size:14px;color:rgba(245,240,232,.45);margin:0 0 4px;">Booking #{{ booking.id }}</p>
+          <p style="font-size:13px;color:rgba(245,240,232,.35);margin:0;">We've made a change to your reservation.</p>
+        </td>
+      </tr>
+
+      <!-- Room change notice -->
+      <tr>
+        <td style="background:#0f0f0c;padding:28px 48px;">
+          <div style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:12px;padding:24px;">
+            <p style="font-size:13px;color:rgba(245,240,232,.6);margin:0 0 20px;line-height:1.6;">
+              Dear <strong style="color:#f5f0e8;">{{ booking.guest.name }}</strong>,<br><br>
+              Due to maintenance requirements, your room assignment for Booking #{{ booking.id }} has been updated. Your booking details remain unchanged.
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="text-align:center;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:16px;">
+                  <div style="font-size:11px;color:rgba(245,240,232,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Previous Room</div>
+                  <div style="font-size:24px;font-weight:700;color:#f87171;">{{ old_number }}</div>
+                </td>
+                <td style="text-align:center;padding:0 16px;color:rgba(245,240,232,.3);font-size:20px;">→</td>
+                <td style="text-align:center;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:16px;">
+                  <div style="font-size:11px;color:rgba(245,240,232,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">New Room</div>
+                  <div style="font-size:24px;font-weight:700;color:#4ade80;">{{ new_number }}</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Unchanged details -->
+          <table width="100%" cellpadding="0" cellspacing="0"
+            style="background:rgba(245,240,232,.03);border:1px solid rgba(245,240,232,.07);border-radius:10px;margin-top:16px;">
+            <tr>
+              <td width="50%" style="padding:16px 20px;border-right:1px solid rgba(245,240,232,.06);">
+                <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Check-in</div>
+                <div style="font-size:14px;font-weight:600;color:#f5f0e8;">{{ booking.check_in }}</div>
+              </td>
+              <td width="50%" style="padding:16px 20px;">
+                <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Check-out</div>
+                <div style="font-size:14px;font-weight:600;color:#f5f0e8;">{{ booking.check_out }}</div>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:12px 20px;border-top:1px solid rgba(245,240,232,.06);">
+                <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Room Type</div>
+                <div style="font-size:14px;color:#c9a84c;text-transform:capitalize;font-weight:600;">{{ booking.room.room_type }} (same category, guaranteed)</div>
+              </td>
+            </tr>
+          </table>
+
+          <p style="font-size:13px;color:rgba(245,240,232,.4);margin:20px 0 0;line-height:1.6;text-align:center;">
+            We sincerely apologise for any inconvenience. Your comfort remains our priority.
+          </p>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="background:#080806;border-radius:0 0 16px 16px;padding:24px 48px;text-align:center;border-top:1px solid rgba(245,240,232,.05);">
+          <div style="font-family:Georgia,serif;font-size:16px;color:#c9a84c;font-weight:700;letter-spacing:2px;">GRAND HOTEL</div>
+          <p style="font-size:12px;color:rgba(245,240,232,.25);margin:8px 0 0;">Where every stay becomes a cherished memory.</p>
+          <p style="font-size:11px;color:rgba(245,240,232,.2);margin:6px 0 0;">
+            Questions? Contact us at <a href="mailto:{{ hotel_email }}" style="color:#c9a84c;text-decoration:none;">{{ hotel_email }}</a>
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,111 @@
+{% extends 'user/base.html' %}
+{% block title %}Rooms — Grand Hotel{% endblock %}
+{% block al_rooms %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .cat-card { overflow: hidden; }
+  .cat-img { height: 240px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+  .cat-img video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .85; }
+  .standard-bg { background: linear-gradient(135deg, rgba(30,50,100,.85), rgba(20,30,60,.85)); }
+  .deluxe-bg   { background: linear-gradient(135deg, rgba(80,50,20,.85), rgba(50,30,10,.85)); }
+  .suite-bg    { background: linear-gradient(135deg, rgba(60,20,80,.85), rgba(40,10,60,.85)); }
+  .avail-badge {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.35);
+    color: #4ade80; font-size: .7rem; padding: 4px 12px; border-radius: 20px; font-weight: 600;
+  }
+  .unavail-badge {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3);
+    color: #f87171; font-size: .7rem; padding: 4px 12px; border-radius: 20px; font-weight: 600;
+  }
+  .festive-banner {
+    background: linear-gradient(135deg, rgba(201,168,76,.12), rgba(90,107,50,.08));
+    border: 1px solid rgba(201,168,76,.3); border-radius: 14px;
+    padding: 16px 24px; display: flex; align-items: center; gap: 14px; margin-bottom: 36px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pt-nav"></div>
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <div class="type-badge mb-3">Our Accommodations</div>
+      <h2 class="section-title">Choose Your Room Type</h2>
+      <div class="gold-line center"></div>
+      <p class="section-sub">Select the category that suits your style — a room will be assigned automatically.</p>
+    </div>
+
+    {% if festive %}
+    <div class="festive-banner" data-aos="fade-up">
+      <i class="fas fa-star" style="color:var(--gold);font-size:1.2rem;flex-shrink:0;"></i>
+      <div>
+        <div style="font-weight:600;color:var(--gold);font-size:.92rem;margin-bottom:2px;">Festive Offer Active</div>
+        <div style="font-size:.78rem;color:rgba(245,240,232,.5);">Enjoy 15% off on all room categories this festive season. Prices shown are already discounted.</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 justify-content-center">
+      {% for cat in categories %}
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+        <div class="g-card cat-card">
+          <div class="cat-img {% if cat.type == 'suite' %}suite-bg{% elif cat.type == 'deluxe' %}deluxe-bg{% else %}standard-bg{% endif %}">
+            {% if cat.type == 'suite' %}
+              <video autoplay muted loop playsinline>
+                <source src="/static/suite.mp4" type="video/mp4">
+              </video>
+            {% elif cat.type == 'deluxe' %}
+              <video autoplay muted loop playsinline>
+                <source src="/static/deluxe.mp4" type="video/mp4">
+              </video>
+            {% else %}
+              🛏️
+            {% endif %}
+            {% if cat.count > 0 %}
+              <span class="avail-badge"><i class="fas fa-check-circle me-1"></i>{{ cat.count }} Available</span>
+            {% else %}
+              <span class="unavail-badge"><i class="fas fa-times-circle me-1"></i>Fully Booked</span>
+            {% endif %}
+          </div>
+
+          <div style="padding: 24px;">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <span class="type-badge">{{ cat.label }}</span>
+                <h3 style="font-size:1.5rem;color:#fff;margin-top:8px;font-family:'Cormorant Garamond',serif;">{{ cat.label }} Room</h3>
+              </div>
+              <div class="text-end">
+                <div style="font-size:1.4rem;font-weight:700;color:var(--gold);">₹{{ cat.price }}</div>
+                {% if cat.orig_price %}
+                <div style="font-size:.75rem;color:rgba(245,240,232,.35);text-decoration:line-through;">₹{{ cat.orig_price }}</div>
+                {% endif %}
+                <div style="font-size:.68rem;color:rgba(245,240,232,.35);">per night</div>
+              </div>
+            </div>
+
+            {% if cat.count > 0 %}
+            <a href="{% url 'user_book' %}?type={{ cat.type }}" class="btn-gold d-block text-center" style="padding:11px;">
+              <i class="fas fa-calendar-check me-2"></i>Book Now
+            </a>
+            {% else %}
+            <div class="btn-gold d-block text-center" style="padding:11px;opacity:.35;cursor:not-allowed;">
+              Not Available
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12 text-center" style="padding:64px;color:rgba(255,255,255,.35);">
+        <i class="fas fa-door-open" style="font-size:3rem;display:block;margin-bottom:16px;color:rgba(201,168,76,.25);"></i>
+        No rooms available right now. Please check back soon.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

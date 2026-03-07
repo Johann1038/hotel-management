@@ -1,0 +1,352 @@
+{% extends 'user/base.html' %}
+{% block title %}Book a Room — Grand Hotel{% endblock %}
+{% block al_book %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .type-tile {
+    cursor: pointer; border: 2px solid rgba(245,240,232,.07);
+    border-radius: 12px; padding: 12px; transition: all .3s ease;
+    background: rgba(245,240,232,.03);
+  }
+  .type-tile:hover { border-color: rgba(201,168,76,.4); background: rgba(201,168,76,.04); }
+  .type-tile.selected { border-color: var(--gold) !important; background: rgba(201,168,76,.08) !important; }
+  .type-tile.unavailable { opacity: .4; cursor: not-allowed; }
+  .tile-img {
+    height: 90px; border-radius: 8px; overflow: hidden; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin-bottom: 8px;
+  }
+  .tile-img video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .8; }
+  .standard-bg { background: linear-gradient(135deg, rgba(30,50,100,.85), rgba(20,30,60,.85)); }
+  .deluxe-bg   { background: linear-gradient(135deg, rgba(80,50,20,.85), rgba(50,30,10,.85)); }
+  .suite-bg    { background: linear-gradient(135deg, rgba(60,20,80,.85), rgba(40,10,60,.85)); }
+  .room-slot + .room-slot { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(245,240,232,.07); }
+  .festive-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.3);
+    color: var(--gold); font-size: .72rem; padding: 4px 12px; border-radius: 20px; font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pt-nav"></div>
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <div class="type-badge mb-3">Reservations</div>
+      <h2 class="section-title">Book Your Stay</h2>
+      <div class="gold-line center"></div>
+      <p class="section-sub">Choose your room types — rooms are assigned automatically.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-lg-8" data-aos="fade-up">
+
+        {% if error %}
+        <div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;font-size:.82rem;padding:12px 16px;border-radius:10px;margin-bottom:24px;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-exclamation-circle"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'user_book' %}">
+          {% csrf_token %}
+          <input type="hidden" name="room_count" id="roomCountInput" value="1">
+
+          <!-- Room Selection -->
+          <div class="g-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4 style="font-size:1.1rem;color:var(--gold);margin:0;"><i class="fas fa-door-open me-2"></i>Rooms</h4>
+              <span id="roomCountBadge" style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;">1 Room</span>
+            </div>
+            <p style="font-size:.78rem;color:rgba(245,240,232,.35);margin-bottom:16px;">
+              Rooms are auto-assigned. Add up to 5 rooms for a group booking.
+            </p>
+
+            {% if festive %}
+            <div class="mb-3">
+              <span class="festive-pill"><i class="fas fa-star me-1"></i>Festive 15% off on all rooms</span>
+            </div>
+            {% endif %}
+
+            <div id="roomSlots">
+              <!-- Room 1 — tile selection -->
+              <div class="room-slot" id="room-0">
+                <div style="font-size:.78rem;color:rgba(245,240,232,.5);font-weight:600;margin-bottom:12px;">
+                  <i class="fas fa-bed me-1" style="color:var(--gold);"></i>Room 1
+                </div>
+                <input type="hidden" name="room_type_0" id="rt_0" value="{{ selected_type }}">
+                <div class="row g-2 mb-3">
+                  {% for cat in categories %}
+                  <div class="col-md-4">
+                    <div class="type-tile {% if selected_type == cat.type %}selected{% endif %} {% if cat.count == 0 %}unavailable{% endif %}"
+                         id="tile-{{ cat.type }}-0"
+                         data-type="{{ cat.type }}" data-price="{{ cat.price }}"
+                         onclick="{% if cat.count > 0 %}selectTile('{{ cat.type }}', 0){% endif %}">
+                      <div class="tile-img {% if cat.type == 'suite' %}suite-bg{% elif cat.type == 'deluxe' %}deluxe-bg{% else %}standard-bg{% endif %}">
+                        {% if cat.type == 'suite' %}
+                          <video autoplay muted loop playsinline><source src="/static/suite.mp4" type="video/mp4"></video>
+                        {% elif cat.type == 'deluxe' %}
+                          <video autoplay muted loop playsinline><source src="/static/deluxe.mp4" type="video/mp4"></video>
+                        {% else %}🛏️{% endif %}
+                      </div>
+                      <div style="font-weight:600;color:#fff;font-size:.85rem;">{{ cat.label }}</div>
+                      <div style="font-size:.8rem;font-weight:700;color:var(--gold);">
+                        ₹{{ cat.price }}<span style="font-size:.62rem;font-weight:400;color:rgba(245,240,232,.35);">/night</span>
+                      </div>
+                      {% if cat.count > 0 %}
+                      <div style="font-size:.65rem;color:#4ade80;margin-top:2px;"><i class="fas fa-check-circle me-1"></i>{{ cat.count }} avail.</div>
+                      {% else %}
+                      <div style="font-size:.65rem;color:#f87171;margin-top:2px;">Booked</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <!-- Occupancy row 0 -->
+                <div class="row g-3">
+                  <div class="col-6">
+                    <label class="form-label">Adults <span style="color:rgba(245,240,232,.3);">(max 2)</span></label>
+                    <select class="form-select" name="adults_0">
+                      <option value="1">1 Adult</option>
+                      <option value="2">2 Adults</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label">Children <span style="color:rgba(245,240,232,.3);">(max 1)</span></label>
+                    <select class="form-select" name="children_0">
+                      <option value="0">No children</option>
+                      <option value="1">1 Child</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <!-- Additional room slots injected here by JS -->
+            </div>
+
+            <!-- Add room button -->
+            <button type="button" onclick="addRoomRow()"
+              id="addRoomBtn"
+              style="width:100%;margin-top:16px;background:transparent;border:1px dashed rgba(201,168,76,.3);color:rgba(245,240,232,.5);padding:11px;border-radius:10px;font-family:'Poppins',sans-serif;font-size:.85rem;cursor:pointer;transition:all .25s;">
+              <i class="fas fa-plus me-2" style="color:var(--gold);"></i>Add Another Room
+            </button>
+          </div>
+
+          <!-- Dates -->
+          <div class="g-card p-4 mb-4">
+            <h4 style="font-size:1.1rem;color:var(--gold);margin-bottom:18px;"><i class="fas fa-calendar me-2"></i>Stay Dates</h4>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label">Check-in</label>
+                <input type="date" class="form-control" name="check_in" id="checkIn" required onchange="calcNights()">
+              </div>
+              <div class="col-6">
+                <label class="form-label">Check-out</label>
+                <input type="date" class="form-control" name="check_out" id="checkOut" required onchange="calcNights()">
+              </div>
+            </div>
+
+            <div id="priceInfo" style="display:none;margin-top:16px;padding:16px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(245,240,232,.06);">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span style="font-size:.85rem;color:rgba(255,255,255,.5);"><i class="fas fa-moon me-2" style="color:var(--gold);"></i><span id="nightsText">—</span></span>
+                <span style="font-size:.85rem;color:rgba(255,255,255,.6);" id="basePrice">—</span>
+              </div>
+              {% if festive %}
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span style="font-size:.78rem;color:var(--gold);"><i class="fas fa-star me-1"></i>Festive 15% off</span>
+                <span style="font-size:.78rem;color:var(--gold);" id="festiveSave">—</span>
+              </div>
+              {% endif %}
+              <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:10px;margin-top:4px;" class="d-flex justify-content-between align-items-center">
+                <span style="font-size:.9rem;font-weight:600;color:#fff;">Estimated Total</span>
+                <span style="font-size:1.25rem;font-weight:700;color:var(--gold);" id="totalPrice">—</span>
+              </div>
+              <div id="longStayNote" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:.76rem;color:#4ade80;">
+                <i class="fas fa-gift me-2"></i>Long-stay bonus: <strong>5–10% off</strong> applied automatically at booking!
+              </div>
+            </div>
+          </div>
+
+          <!-- Guest Info -->
+          <div class="g-card p-4 mb-4">
+            <h4 style="font-size:1.1rem;color:var(--gold);margin-bottom:18px;"><i class="fas fa-user me-2"></i>Your Details</h4>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" name="name" placeholder="John Smith" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-control" name="email" placeholder="john@example.com" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" name="phone" placeholder="+91 98765 43210" required>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-gold d-block w-100" style="padding:15px;font-size:1rem;">
+            <i class="fas fa-check me-2"></i>Confirm Booking
+          </button>
+          <p style="text-align:center;font-size:.75rem;color:rgba(255,255,255,.28);margin-top:12px;">
+            Free cancellation &nbsp;·&nbsp; No credit card required
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('checkIn').min = today;
+document.getElementById('checkOut').min = today;
+document.getElementById('checkIn').addEventListener('change', function() {
+  document.getElementById('checkOut').min = this.value;
+  calcNights();
+});
+
+const festive = {{ festive|yesno:"true,false" }};
+
+// Category prices and availability from server
+const catPrices = {
+  {% for cat in categories %}'{{ cat.type }}': {{ cat.price|default:0 }},{% endfor %}
+};
+const catAvail = {
+  {% for cat in categories %}'{{ cat.type }}': {{ cat.count }},{% endfor %}
+};
+
+let roomCount = 1;
+let nextRoomIdx = 1; // always increasing, never reused
+
+// ── Tile selection for room 0 ──
+function selectTile(type, slotIdx) {
+  document.querySelectorAll(`[data-tile-slot="${slotIdx}"]`).forEach(t => t.classList.remove('selected'));
+  const tile = document.getElementById(`tile-${type}-${slotIdx}`);
+  if (tile) tile.classList.add('selected');
+  document.getElementById(`rt_${slotIdx}`).value = type;
+  calcNights();
+}
+
+// Mark tile data attributes for scoping (add to tiles)
+document.querySelectorAll('#room-0 .type-tile').forEach(t => t.setAttribute('data-tile-slot', '0'));
+
+// Pre-select if type passed
+(function() {
+  const pre = document.getElementById('rt_0').value;
+  if (pre) {
+    document.querySelectorAll('[data-tile-slot="0"]').forEach(t => t.classList.remove('selected'));
+    const tile = document.getElementById('tile-' + pre + '-0');
+    if (tile) tile.classList.add('selected');
+  }
+})();
+
+// ── Add / remove room rows ──
+function addRoomRow() {
+  if (roomCount >= 5) {
+    document.getElementById('addRoomBtn').textContent = 'Maximum 5 rooms per booking';
+    return;
+  }
+  const idx = nextRoomIdx++;
+  roomCount++;
+
+  const typeOpts = Object.keys(catPrices).map(t =>
+    `<option value="${t}">${t.charAt(0).toUpperCase()+t.slice(1)} — ₹${catPrices[t]}/night${catAvail[t]===0?' (unavailable)':''}</option>`
+  ).join('');
+
+  const html = `
+  <div class="room-slot" id="room-${idx}">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div style="font-size:.78rem;color:rgba(245,240,232,.5);font-weight:600;">
+        <i class="fas fa-bed me-1" style="color:var(--gold);"></i><span class="room-label">Room ${roomCount}</span>
+      </div>
+      <button type="button" onclick="removeRoomRow(${idx})"
+        style="background:none;border:1px solid rgba(239,68,68,.25);color:#f87171;border-radius:6px;padding:3px 10px;font-size:.72rem;cursor:pointer;font-family:'Poppins',sans-serif;">
+        <i class="fas fa-times me-1"></i>Remove
+      </button>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Room Type</label>
+        <select class="form-select extra-type-sel" name="room_type_${idx}" onchange="calcNights()">${typeOpts}</select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Adults <span style="color:rgba(245,240,232,.3);">(max 2)</span></label>
+        <select class="form-select" name="adults_${idx}">
+          <option value="1">1 Adult</option><option value="2">2 Adults</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Children <span style="color:rgba(245,240,232,.3);">(max 1)</span></label>
+        <select class="form-select" name="children_${idx}">
+          <option value="0">No children</option><option value="1">1 Child</option>
+        </select>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('roomSlots').insertAdjacentHTML('beforeend', html);
+  updateRoomCount();
+  calcNights();
+}
+
+function removeRoomRow(idx) {
+  document.getElementById('room-' + idx).remove();
+  roomCount--;
+  updateRoomCount();
+  // Renumber labels
+  let n = 2;
+  document.querySelectorAll('.room-slot:not(#room-0) .room-label').forEach(el => el.textContent = `Room ${n++}`);
+  calcNights();
+}
+
+function updateRoomCount() {
+  document.getElementById('roomCountInput').value = roomCount;
+  document.getElementById('roomCountBadge').textContent = roomCount + (roomCount === 1 ? ' Room' : ' Rooms');
+  const btn = document.getElementById('addRoomBtn');
+  btn.innerHTML = roomCount >= 5
+    ? '<i class="fas fa-ban me-2"></i>Maximum 5 rooms reached'
+    : '<i class="fas fa-plus me-2" style="color:var(--gold);"></i>Add Another Room';
+  btn.disabled = roomCount >= 5;
+}
+
+// ── Price calculation ──
+function calcNights() {
+  const ci = document.getElementById('checkIn').value;
+  const co = document.getElementById('checkOut').value;
+  const info = document.getElementById('priceInfo');
+  if (!ci || !co) { info.style.display = 'none'; return; }
+  const nights = Math.round((new Date(co) - new Date(ci)) / 86400000);
+  if (nights <= 0) { info.style.display = 'none'; return; }
+
+  // Sum prices across all rooms
+  let totalPerNight = 0;
+  const rt0 = document.getElementById('rt_0').value;
+  if (rt0 && catPrices[rt0]) totalPerNight += catPrices[rt0];
+  document.querySelectorAll('.extra-type-sel').forEach(sel => {
+    if (sel.value && catPrices[sel.value]) totalPerNight += catPrices[sel.value];
+  });
+
+  const base = nights * totalPerNight;
+  const roomsLabel = roomCount > 1 ? ` × ${roomCount} rooms` : '';
+  document.getElementById('nightsText').textContent = `${nights} night${nights>1?'s':''}${roomsLabel}`;
+  document.getElementById('basePrice').textContent = '₹' + base.toLocaleString();
+
+  let total = base;
+  if (festive) {
+    const save = base * 0.15;
+    const el = document.getElementById('festiveSave');
+    if (el) { el.textContent = '−₹' + Math.round(save).toLocaleString(); }
+    total -= save;
+  }
+
+  document.getElementById('longStayNote').style.display = nights > 5 ? 'block' : 'none';
+  document.getElementById('totalPrice').textContent = '₹' + Math.round(total).toLocaleString() + (nights > 5 ? ' *' : '');
+  info.style.display = 'block';
+}
+</script>
+{% endblock %}

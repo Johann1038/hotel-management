@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Bookings{% endblock %}
+{% block nb %}active{% endblock %}
+{% block breadcrumb %}Bookings{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center" data-aos="fade-down">
+  <div><h1>Booking Management</h1><p>Track and manage all hotel reservations.</p></div>
+  <button class="btn-gold" onclick="openAdd()"><i class="fas fa-plus me-2"></i>New Booking</button>
+</div>
+
+<div class="g-card" data-aos="fade-up">
+  <div class="p-4" style="border-bottom:1px solid rgba(255,255,255,.05);">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div class="stitle mb-0">
+        All Reservations <span style="color:rgba(255,255,255,.28);font-size:.78rem;font-weight:400;">— {{ bookings|length }} total</span>
+      </div>
+      <input class="form-control" placeholder="Search bookings…" style="max-width:260px;" oninput="filtB(this.value)">
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="h-table" id="bTable">
+      <thead>
+        <tr>
+          <th>#</th><th>Guest</th><th>Room</th><th>Type</th><th>Check-in</th><th>Check-out</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr id="br-{{ b.id }}">
+          <td style="color:rgba(255,255,255,.28);font-size:.78rem;">#{{ b.id }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar">{{ b.guest.name|first|upper }}</div>
+              <div>
+                <div style="font-weight:500;color:#fff;">{{ b.guest.name }}</div>
+                <div style="font-size:.7rem;color:rgba(255,255,255,.35);">{{ b.guest.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="gold" style="font-weight:600;">{{ b.room.room_number }}</span></td>
+          <td style="text-transform:capitalize;font-size:.82rem;color:rgba(255,255,255,.55);">{{ b.room.room_type }}</td>
+          <td style="color:rgba(255,255,255,.65);">{{ b.check_in }}</td>
+          <td style="color:rgba(255,255,255,.65);">{{ b.check_out }}</td>
+          <td>
+            <button class="btn-danger-og" onclick="delBooking({{ b.id }})">
+              <i class="fas fa-trash me-1"></i>Cancel
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="empty-state" style="padding:56px;">
+            <i class="fas fa-calendar-check"></i>No bookings yet. Create your first booking.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Booking Modal -->
+<div class="modal fade" id="mAdd" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>New Booking</h5>
+        <button class="btn-close-w" onclick="bootstrap.Modal.getInstance(document.getElementById('mAdd')).hide()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Guest</label>
+            <select class="form-select" id="a-guest">
+              <option value="">Select guest…</option>
+              {% for g in guests %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Room</label>
+            <select class="form-select" id="a-room">
+              <option value="">Select room…</option>
+              {% for r in rooms %}
+              <option value="{{ r.id }}">Room {{ r.room_number }} — {{ r.room_type }} (₹{{ r.price_per_night }}/night)</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-6"><label class="form-label">Check-in</label><input type="date" class="form-control" id="a-in"></div>
+          <div class="col-6"><label class="form-label">Check-out</label><input type="date" class="form-control" id="a-out"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-og" onclick="bootstrap.Modal.getInstance(document.getElementById('mAdd')).hide()">Cancel</button>
+        <button class="btn-gold" onclick="addBooking()"><i class="fas fa-plus me-2"></i>Create Booking</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const mAdd = new bootstrap.Modal(document.getElementById('mAdd'));
+function openAdd() { mAdd.show(); }
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('a-in').min = today;
+document.getElementById('a-out').min = today;
+document.getElementById('a-in').addEventListener('change', function() {
+  document.getElementById('a-out').min = this.value;
+});
+
+function filtB(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#bTable tbody tr').forEach(r => r.style.display = r.textContent.toLowerCase().includes(q)?'':'none');
+}
+
+async function addBooking() {
+  const g = document.getElementById('a-guest').value;
+  const r = document.getElementById('a-room').value;
+  const ci = document.getElementById('a-in').value;
+  const co = document.getElementById('a-out').value;
+  if (!g || !r || !ci || !co) { toast('Please fill all fields', 'error'); return; }
+  if (ci >= co) { toast('Check-out must be after check-in', 'error'); return; }
+  try {
+    await api('POST', '/api/bookings/', { guest: g, room: r, check_in: ci, check_out: co });
+    toast('Booking created!'); mAdd.hide(); setTimeout(()=>location.reload(), 700);
+  } catch(e) { toast('Error creating booking', 'error'); }
+}
+
+async function delBooking(id) {
+  if (!confirm('Cancel this booking?')) return;
+  try {
+    await api('DELETE', `/api/bookings/${id}/`);
+    toast('Booking cancelled');
+    document.getElementById(`br-${id}`).remove();
+  } catch(e) { toast('Error cancelling booking', 'error'); }
+}
+</script>
+{% endblock %}

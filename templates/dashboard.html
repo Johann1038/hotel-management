@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block nd %}active{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start" data-aos="fade-down">
+  <div>
+    <h1>Welcome back <span class="gold">✦</span></h1>
+    <p>Here's what's happening at Grand Hotel today.</p>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6" data-aos="fade-up">
+    <div class="g-card stat-card">
+      <div class="stat-icon" style="background:rgba(201,168,76,.13);color:var(--gold);"><i class="fas fa-door-open"></i></div>
+      <div class="stat-val" id="s-rooms">{{ stats.total_rooms }}</div>
+      <div class="stat-lbl">Total Rooms</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="80">
+    <div class="g-card stat-card">
+      <div class="stat-icon" style="background:rgba(34,197,94,.13);color:#4ade80;"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-val" id="s-avail" style="color:#4ade80;">{{ stats.available_rooms }}</div>
+      <div class="stat-lbl">Available</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="160">
+    <div class="g-card stat-card">
+      <div class="stat-icon" style="background:rgba(99,102,241,.13);color:#818cf8;"><i class="fas fa-users"></i></div>
+      <div class="stat-val" id="s-guests" style="color:#818cf8;">{{ stats.total_guests }}</div>
+      <div class="stat-lbl">Total Guests</div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6" data-aos="fade-up" data-aos-delay="240">
+    <div class="g-card stat-card">
+      <div class="stat-icon" style="background:rgba(239,68,68,.13);color:#f87171;"><i class="fas fa-calendar-check"></i></div>
+      <div class="stat-val" id="s-bookings" style="color:#f87171;">{{ stats.total_bookings }}</div>
+      <div class="stat-lbl">Total Bookings</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart + Recent Bookings -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4" data-aos="fade-right">
+    <div class="g-card p-4 h-100">
+      <div class="stitle">Room Occupancy</div>
+      <div style="position:relative;height:200px;display:flex;align-items:center;justify-content:center;">
+        <canvas id="oChart"></canvas>
+        <div style="position:absolute;text-align:center;">
+          <div style="font-size:1.9rem;font-weight:700;color:#fff;" id="opc">0%</div>
+          <div style="font-size:.7rem;color:rgba(255,255,255,.35);">Occupied</div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-around mt-3">
+        <div class="text-center">
+          <div style="font-size:1.1rem;font-weight:600;color:#4ade80;" id="cl-a">{{ stats.available_rooms }}</div>
+          <div style="font-size:.68rem;color:rgba(255,255,255,.35);">Available</div>
+        </div>
+        <div class="text-center">
+          <div style="font-size:1.1rem;font-weight:600;color:#f87171;" id="cl-o">{{ stats.occupied_rooms }}</div>
+          <div style="font-size:.68rem;color:rgba(255,255,255,.35);">Occupied</div>
+        </div>
+        <div class="text-center">
+          <div style="font-size:1.1rem;font-weight:600;color:#fbbf24;" id="cl-m">{{ stats.maintenance_rooms }}</div>
+          <div style="font-size:.68rem;color:rgba(255,255,255,.35);">Maint.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8" data-aos="fade-left">
+    <div class="g-card p-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="stitle mb-0">Recent Bookings</div>
+        <a href="{% url 'bookings_page' %}" class="btn-og">View All</a>
+      </div>
+      <table class="h-table">
+        <thead><tr><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th></tr></thead>
+        <tbody>
+          {% for b in recent_bookings %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar" style="width:30px;height:30px;font-size:.72rem;">{{ b.guest.name|first|upper }}</div>
+                {{ b.guest.name }}
+              </div>
+            </td>
+            <td><span class="gold" style="font-weight:600;">{{ b.room.room_number }}</span></td>
+            <td style="color:rgba(255,255,255,.5);">{{ b.check_in }}</td>
+            <td style="color:rgba(255,255,255,.5);">{{ b.check_out }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="empty-state" style="padding:32px;">No bookings yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Today -->
+<div class="row g-3" data-aos="fade-up">
+  <div class="col-md-6">
+    <div class="g-card p-4">
+      <div class="stitle">Today's Check-ins</div>
+      <div style="font-size:3rem;font-weight:700;color:#4ade80;" id="s-in">{{ stats.today_checkins }}</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.35);">guests arriving today</div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="g-card p-4">
+      <div class="stitle">Today's Check-outs</div>
+      <div style="font-size:3rem;font-weight:700;color:#f87171;" id="s-out">{{ stats.today_checkouts }}</div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.35);">guests departing today</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const oData = { o: {{ stats.occupied_rooms }}, a: {{ stats.available_rooms }}, m: {{ stats.maintenance_rooms }}, t: {{ stats.total_rooms }} };
+
+const chart = new Chart(document.getElementById('oChart').getContext('2d'), {
+  type: 'doughnut',
+  data: {
+    datasets: [{ data: [oData.o, oData.a, oData.m],
+      backgroundColor: ['rgba(239,68,68,.8)','rgba(34,197,94,.8)','rgba(245,158,11,.8)'],
+      borderColor: ['rgba(239,68,68,.15)','rgba(34,197,94,.15)','rgba(245,158,11,.15)'],
+      borderWidth: 2, hoverOffset: 8 }]
+  },
+  options: { cutout: '76%', plugins: { legend: { display: false } }, animation: { animateScale: true, duration: 1000 } }
+});
+
+function setPct(o, t) { document.getElementById('opc').textContent = Math.round((o/(t||1))*100)+'%'; }
+setPct(oData.o, oData.t);
+
+document.addEventListener('statsUp', e => {
+  const d = e.detail;
+  animNum(document.getElementById('s-rooms'),    d.total_rooms);
+  animNum(document.getElementById('s-avail'),    d.available_rooms);
+  animNum(document.getElementById('s-guests'),   d.total_guests);
+  animNum(document.getElementById('s-bookings'), d.total_bookings);
+  animNum(document.getElementById('s-in'),       d.today_checkins);
+  animNum(document.getElementById('s-out'),      d.today_checkouts);
+  document.getElementById('cl-a').textContent = d.available_rooms;
+  document.getElementById('cl-o').textContent = d.occupied_rooms;
+  document.getElementById('cl-m').textContent = d.maintenance_rooms;
+  chart.data.datasets[0].data = [d.occupied_rooms, d.available_rooms, d.maintenance_rooms];
+  chart.update('active');
+  setPct(d.occupied_rooms, d.total_rooms);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,480 @@
+{% extends 'base.html' %}
+{% block title %}Rooms{% endblock %}
+{% block nr %}active{% endblock %}
+{% block breadcrumb %}Rooms{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3" data-aos="fade-down">
+  <div><h1>Room Management</h1><p>Manage all hotel rooms and their availability.</p></div>
+  <div class="d-flex gap-2 align-items-center">
+    <button class="btn-og" id="festivBtn" onclick="toggleFestive()"
+      style="{% if festive %}border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.1);{% endif %}">
+      <i class="fas fa-star me-2" style="font-size:.8rem;"></i>
+      <span id="festivLabel">{% if festive %}Festive ON{% else %}Festive Mode{% endif %}</span>
+    </button>
+    <button class="btn-gold" onclick="openAdd()"><i class="fas fa-plus me-2"></i>Add Room</button>
+  </div>
+</div>
+
+<!-- Filter -->
+<div class="d-flex gap-2 mb-4 flex-wrap" data-aos="fade-up">
+  <button class="btn-og" onclick="filt('all')" id="f-all" style="border-color:var(--gold);color:var(--gold);">All ({{ rooms|length }})</button>
+  <button class="btn-og" onclick="filt('available')" id="f-available" style="color:#4ade80;border-color:rgba(34,197,94,.35);">Available</button>
+  <button class="btn-og" onclick="filt('occupied')" id="f-occupied" style="color:#f87171;border-color:rgba(239,68,68,.35);">Occupied</button>
+  <button class="btn-og" onclick="filt('maintenance')" id="f-maintenance" style="color:#fbbf24;border-color:rgba(245,158,11,.35);">Maintenance</button>
+</div>
+
+<!-- Room Grid -->
+<div class="row g-3" id="rooms-grid">
+  {% for room in rooms %}
+  <div class="col-xl-3 col-lg-4 col-md-6 rm-col" data-status="{{ room.status }}" data-aos="fade-up">
+    <div class="g-card p-4" id="rm-{{ room.id }}">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <div style="font-size:.65rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;">Room</div>
+          <div style="font-size:2.2rem;font-weight:700;color:var(--gold);line-height:1.1;">{{ room.room_number }}</div>
+        </div>
+        {% if room.status == 'available' %}
+          <span class="b-avail"><span class="pdot"></span>Available</span>
+        {% elif room.status == 'occupied' %}
+          <span class="b-occ">Occupied</span>
+        {% else %}
+          <span class="b-maint">Maintenance</span>
+        {% endif %}
+      </div>
+      <div style="font-size:.82rem;color:rgba(255,255,255,.55);margin-bottom:4px;text-transform:capitalize;">
+        <i class="fas fa-tag me-1" style="color:var(--gold);font-size:.72rem;"></i>{{ room.room_type }}
+      </div>
+      <div style="font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:18px;">
+        ₹{{ room.price_per_night }}<span style="font-size:.72rem;font-weight:400;color:rgba(255,255,255,.35);">/night</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn-og flex-grow-1"
+          onclick="openEdit({{ room.id }},'{{ room.room_number }}','{{ room.room_type }}',{{ room.price_per_night }},'{{ room.status }}')">
+          <i class="fas fa-pen me-1"></i>Edit
+        </button>
+        {% if room.status == 'available' %}
+        <button class="btn-og" onclick="quickMaint({{ room.id }}, '{{ room.status }}')"
+          style="color:#fbbf24;border-color:rgba(245,158,11,.3);" title="Set to Maintenance">
+          <i class="fas fa-wrench"></i>
+        </button>
+        {% elif room.status == 'maintenance' %}
+        <button class="btn-og" onclick="quickMaint({{ room.id }}, '{{ room.status }}')"
+          style="color:#4ade80;border-color:rgba(34,197,94,.3);" title="Restore to Available">
+          <i class="fas fa-rotate-left"></i>
+        </button>
+        {% endif %}
+        <button class="btn-danger-og" onclick="delRoom({{ room.id }},'{{ room.room_number }}')">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12 empty-state" data-aos="fade-up">
+    <i class="fas fa-door-open"></i>No rooms yet. Add your first room.
+  </div>
+  {% endfor %}
+</div>
+
+<!-- ── Maintenance Management Panel ── -->
+<div class="g-card p-4 mt-4" data-aos="fade-up">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:44px;height:44px;border-radius:10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="fas fa-wrench" style="color:#fbbf24;font-size:1rem;"></i>
+    </div>
+    <div>
+      <div style="font-size:1rem;font-weight:600;color:#fff;">Maintenance Management</div>
+      <div style="font-size:.75rem;color:rgba(255,255,255,.35);">Rooms in maintenance are hidden from guest availability counts.</div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Set to maintenance -->
+    <div class="col-md-6">
+      <div style="background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.15);border-radius:12px;padding:20px;">
+        <div style="font-size:.75rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+          <i class="fas fa-arrow-right-to-bracket me-1" style="color:#fbbf24;"></i>Set to Maintenance
+        </div>
+        {% if available_rooms %}
+        <div class="d-flex gap-2">
+          <select class="form-select" id="maintRoomSel" style="flex:1;">
+            {% for room in available_rooms %}
+            <option value="{{ room.id }}">Room {{ room.room_number }} — {{ room.room_type|capfirst }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn-og" onclick="setMaintenance()" style="color:#fbbf24;border-color:rgba(245,158,11,.35);white-space:nowrap;">
+            <i class="fas fa-wrench me-1"></i>Set
+          </button>
+        </div>
+        <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin-top:8px;">
+          {{ available_rooms|length }} available room{{ available_rooms|length|pluralize }} shown
+        </div>
+        {% else %}
+        <div style="font-size:.82rem;color:rgba(255,255,255,.3);padding:12px 0;">
+          <i class="fas fa-check-circle me-2" style="color:#4ade80;"></i>No available rooms to set to maintenance
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Currently in maintenance -->
+    <div class="col-md-6">
+      <div style="background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.15);border-radius:12px;padding:20px;">
+        <div style="font-size:.75rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+          <i class="fas fa-list-check me-1" style="color:#fbbf24;"></i>Currently in Maintenance
+          <span style="background:rgba(245,158,11,.15);color:#fbbf24;border-radius:20px;padding:1px 8px;font-size:.7rem;margin-left:6px;">{{ maintenance_rooms|length }}</span>
+        </div>
+        {% if maintenance_rooms %}
+        <div style="max-height:160px;overflow-y:auto;" id="maintList">
+          {% for room in maintenance_rooms %}
+          <div class="d-flex align-items-center justify-content-between mb-2" id="ml-{{ room.id }}" style="background:rgba(255,255,255,.03);border-radius:8px;padding:8px 12px;">
+            <div>
+              <span style="font-weight:600;color:#fbbf24;font-size:.92rem;">{{ room.room_number }}</span>
+              <span style="font-size:.75rem;color:rgba(255,255,255,.4);margin-left:8px;text-transform:capitalize;">{{ room.room_type }}</span>
+            </div>
+            <button class="btn-og" onclick="restoreRoom({{ room.id }})" style="color:#4ade80;border-color:rgba(34,197,94,.3);font-size:.72rem;padding:4px 10px;">
+              <i class="fas fa-rotate-left me-1"></i>Restore
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="font-size:.82rem;color:rgba(255,255,255,.3);padding:12px 0;">
+          <i class="fas fa-circle-check me-2" style="color:#4ade80;"></i>No rooms currently in maintenance
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Modal ── -->
+<div class="modal fade" id="mAdd" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-door-open me-2"></i>Add New Room</h5>
+        <button class="btn-close-w" onclick="bootstrap.Modal.getInstance(document.getElementById('mAdd')).hide()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Room Type</label>
+            <select class="form-select" id="a-type" onchange="fetchNextNum()">
+              <option value="standard">Standard (101–199)</option>
+              <option value="deluxe">Deluxe (201–299)</option>
+              <option value="suite">Suite (301–350)</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Auto-Assigned Room Number</label>
+            <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:10px;">
+              <i class="fas fa-hashtag" style="color:var(--gold);font-size:.9rem;"></i>
+              <span id="a-num-preview" style="font-size:1.1rem;font-weight:700;color:var(--gold);">Loading…</span>
+              <span style="font-size:.72rem;color:rgba(255,255,255,.35);margin-left:auto;">auto-generated</span>
+            </div>
+            <div id="a-num-error" style="display:none;font-size:.75rem;color:#f87171;margin-top:5px;"></div>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Price / Night (₹)</label>
+            <input type="number" class="form-control" id="a-price" placeholder="3000" min="0">
+          </div>
+          <div class="col-6">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="a-status">
+              <option value="available">Available</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-og" onclick="bootstrap.Modal.getInstance(document.getElementById('mAdd')).hide()">Cancel</button>
+        <button class="btn-gold" onclick="addRoom()"><i class="fas fa-plus me-2"></i>Add Room</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Modal ── -->
+<div class="modal fade" id="mEdit" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-pen me-2"></i>Edit Room</h5>
+        <button class="btn-close-w" onclick="bootstrap.Modal.getInstance(document.getElementById('mEdit')).hide()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="e-id">
+        <input type="hidden" id="e-orig-num">
+        <div class="row g-3">
+          <div class="col-6">
+            <label class="form-label">Room Number</label>
+            <div class="d-flex gap-2">
+              <input class="form-control" id="e-num-display" readonly style="opacity:.6;flex:1;">
+              <select class="form-select" id="e-num-select" style="display:none;flex:1;"></select>
+              <button type="button" class="btn-og" id="chgNumBtn" onclick="initiateNumChange()"
+                style="white-space:nowrap;flex-shrink:0;font-size:.75rem;">Change</button>
+            </div>
+            <div id="chgNumHint" style="display:none;font-size:.68rem;color:var(--gold);margin-top:5px;">
+              <i class="fas fa-triangle-exclamation me-1"></i>Select new number then click Save
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Room Type</label>
+            <select class="form-select" id="e-type">
+              <option value="standard">Standard</option>
+              <option value="deluxe">Deluxe</option>
+              <option value="suite">Suite</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Price / Night (₹)</label>
+            <input type="number" class="form-control" id="e-price">
+          </div>
+          <div class="col-6">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="e-status">
+              <option value="available">Available</option>
+              <option value="occupied">Occupied</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-og" onclick="bootstrap.Modal.getInstance(document.getElementById('mEdit')).hide()">Cancel</button>
+        <button class="btn-gold" onclick="updRoom()"><i class="fas fa-save me-2"></i>Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const mAdd = new bootstrap.Modal(document.getElementById('mAdd'));
+const mEdit = new bootstrap.Modal(document.getElementById('mEdit'));
+
+// ── Add Room ──
+function openAdd() {
+  document.getElementById('a-price').value = '';
+  document.getElementById('a-status').value = 'available';
+  document.getElementById('a-type').value = 'standard';
+  fetchNextNum();
+  mAdd.show();
+}
+
+async function fetchNextNum() {
+  const type = document.getElementById('a-type').value;
+  const preview = document.getElementById('a-num-preview');
+  const errEl = document.getElementById('a-num-error');
+  preview.textContent = 'Loading…';
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(`/api/next-room-number/?type=${type}`);
+    const data = await res.json();
+    if (data.number) {
+      preview.textContent = data.number;
+    } else {
+      preview.textContent = '—';
+      errEl.textContent = data.error || 'No numbers available';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    preview.textContent = '—';
+    errEl.textContent = 'Could not fetch room number';
+    errEl.style.display = 'block';
+  }
+}
+
+async function addRoom() {
+  const numEl = document.getElementById('a-num-preview');
+  const roomNum = numEl.textContent;
+  if (!roomNum || roomNum === '—' || roomNum === 'Loading…') {
+    toast('No room number available for this type', 'error'); return;
+  }
+  const price = document.getElementById('a-price').value;
+  if (!price) { toast('Please enter a price', 'error'); return; }
+  try {
+    await api('POST', '/api/rooms/', {
+      room_number: roomNum,
+      room_type: document.getElementById('a-type').value,
+      price_per_night: price,
+      status: document.getElementById('a-status').value,
+    });
+    toast('Room ' + roomNum + ' added!'); mAdd.hide(); setTimeout(()=>location.reload(), 700);
+  } catch(e) { toast('Error adding room — number may already exist', 'error'); fetchNextNum(); }
+}
+
+// ── Edit Room ──
+function openEdit(id, num, type, price, status) {
+  document.getElementById('e-id').value = id;
+  document.getElementById('e-orig-num').value = num;
+  document.getElementById('e-num-display').value = num;
+  document.getElementById('e-num-select').style.display = 'none';
+  document.getElementById('e-num-display').style.display = '';
+  document.getElementById('chgNumHint').style.display = 'none';
+  document.getElementById('chgNumBtn').textContent = 'Change';
+  document.getElementById('chgNumBtn').disabled = false;
+  document.getElementById('chgNumBtn').style.display = '';
+  document.getElementById('e-type').value = type;
+  document.getElementById('e-price').value = price;
+  document.getElementById('e-status').value = status;
+  mEdit.show();
+}
+
+function filt(s) {
+  document.querySelectorAll('.rm-col').forEach(c => c.style.display = (s==='all'||c.dataset.status===s)?'':'none');
+}
+
+// ── Change Room Number: double-confirm + type-restricted list ──
+async function initiateNumChange() {
+  const orig = document.getElementById('e-orig-num').value;
+  const id = document.getElementById('e-id').value;
+  const type = document.getElementById('e-type').value;
+  const ranges = { standard: '101–199', deluxe: '201–299', suite: '301–350' };
+
+  const ok1 = confirm(
+    `⚠️ Room numbers are permanent identifiers.\n\nChange Room ${orig} (${type})?\nNew number will be from range ${ranges[type]}.\n\nThis affects all linked bookings.`
+  );
+  if (!ok1) return;
+
+  document.getElementById('chgNumBtn').disabled = true;
+  document.getElementById('chgNumBtn').textContent = 'Loading…';
+
+  try {
+    const res = await fetch(`/api/room-numbers/?exclude=${id}&type=${type}`);
+    const data = await res.json();
+    if (!data.numbers.length) {
+      toast('No available numbers in this type\'s range', 'error');
+      document.getElementById('chgNumBtn').disabled = false;
+      document.getElementById('chgNumBtn').textContent = 'Change';
+      return;
+    }
+    const sel = document.getElementById('e-num-select');
+    sel.innerHTML = data.numbers.map(n => `<option value="${n}">${n}</option>`).join('');
+    document.getElementById('e-num-display').style.display = 'none';
+    sel.style.display = '';
+    document.getElementById('chgNumHint').style.display = 'block';
+    document.getElementById('chgNumBtn').style.display = 'none';
+  } catch(e) {
+    toast('Could not load available numbers', 'error');
+    document.getElementById('chgNumBtn').disabled = false;
+    document.getElementById('chgNumBtn').textContent = 'Change';
+  }
+}
+
+function getNewRoomNumber() {
+  const sel = document.getElementById('e-num-select');
+  return sel.style.display !== 'none' ? sel.value : document.getElementById('e-orig-num').value;
+}
+
+async function updRoom() {
+  const id = document.getElementById('e-id').value;
+  const origNum = document.getElementById('e-orig-num').value;
+  const newNum = getNewRoomNumber();
+
+  if (newNum !== origNum) {
+    const ok2 = confirm(`Final confirmation:\n\nRoom ${origNum}  →  Room ${newNum}\n\nProceed?`);
+    if (!ok2) return;
+  }
+
+  try {
+    await api('PUT', `/api/rooms/${id}/`, {
+      room_number: newNum,
+      room_type: document.getElementById('e-type').value,
+      price_per_night: document.getElementById('e-price').value,
+      status: document.getElementById('e-status').value,
+    });
+    toast('Room updated!'); mEdit.hide(); setTimeout(()=>location.reload(), 700);
+  } catch(e) { toast('Error updating room', 'error'); }
+}
+
+async function delRoom(id, num) {
+  if (!confirm(`Delete Room ${num}?`)) return;
+  try {
+    await api('DELETE', `/api/rooms/${id}/`);
+    toast('Room deleted');
+    document.getElementById(`rm-${id}`).closest('.rm-col').remove();
+  } catch(e) { toast('Error deleting room', 'error'); }
+}
+
+// ── Shared maintenance API call ──
+async function callMaintenance(id) {
+  const res = await fetch(`/api/maintenance/${id}/`, {
+    method: 'POST', headers: { 'X-CSRFToken': csrf() }
+  });
+  return res.json();
+}
+
+function showMaintResult(data) {
+  if (data.error) { toast(data.error, 'error'); return false; }
+  if (data.status === 'maintenance') {
+    let msg = `Room ${data.room_number} set to maintenance.`;
+    if (data.reassigned && data.reassigned.length) {
+      msg += ` ${data.reassigned.length} booking(s) auto-reassigned & guests notified by email.`;
+    }
+    if (data.warnings && data.warnings.length) {
+      data.warnings.forEach(w => toast('⚠️ ' + w, 'error'));
+    }
+    toast(msg);
+  } else {
+    toast(`Room ${data.room_number} restored to available.`);
+  }
+  return true;
+}
+
+// ── Quick maintenance toggle on room card ──
+async function quickMaint(id, currentStatus) {
+  if (currentStatus === 'available') {
+    if (!confirm('Set this room to Maintenance?\n\nAny active bookings will be auto-reassigned and guests notified.')) return;
+  }
+  try {
+    const data = await callMaintenance(id);
+    if (showMaintResult(data)) setTimeout(() => location.reload(), 900);
+  } catch(e) { toast('Error updating maintenance status', 'error'); }
+}
+
+// ── Maintenance panel actions ──
+async function setMaintenance() {
+  const sel = document.getElementById('maintRoomSel');
+  if (!sel || !sel.value) return;
+  const label = sel.options[sel.selectedIndex].text;
+  if (!confirm(`Set ${label} to Maintenance?\n\nAny active bookings will be auto-reassigned and guests notified by email.`)) return;
+  try {
+    const data = await callMaintenance(sel.value);
+    if (showMaintResult(data)) setTimeout(() => location.reload(), 900);
+  } catch(e) { toast('Error', 'error'); }
+}
+
+async function restoreRoom(id) {
+  try {
+    const data = await callMaintenance(id);
+    if (showMaintResult(data)) setTimeout(() => location.reload(), 700);
+  } catch(e) { toast('Error', 'error'); }
+}
+
+// ── Festive mode toggle ──
+async function toggleFestive() {
+  try {
+    const res = await fetch('/api/festive/', {
+      method: 'POST', headers: { 'X-CSRFToken': csrf(), 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    const btn = document.getElementById('festivBtn');
+    const lbl = document.getElementById('festivLabel');
+    if (data.festive) {
+      btn.style.cssText += ';border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.1);';
+      lbl.textContent = 'Festive ON';
+      toast('Festive mode ON — 15% off for all guests!');
+    } else {
+      btn.style.borderColor = btn.style.color = btn.style.background = '';
+      lbl.textContent = 'Festive Mode';
+      toast('Festive mode OFF');
+    }
+  } catch(e) { toast('Could not toggle festive mode', 'error'); }
+}
+</script>
+{% endblock %}
