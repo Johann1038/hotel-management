@@ -17,7 +17,8 @@ services:
              python manage.py migrate &&
              gunicorn hotel.wsgi:application --bind 0.0.0.0:8000 --workers 2"
     volumes:
-      - .:/app
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
     ports:
       - "8000:8000"
     environment:
