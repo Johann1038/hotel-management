@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Staff Accounts{% endblock %}
+{% block ns %}active{% endblock %}
+{% block breadcrumb %}System / Staff Accounts{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-start" data-aos="fade-down">
+  <div>
+    <h1>Staff Accounts</h1>
+    <p>Create and manage admin users for the management system.</p>
+  </div>
+  <button class="btn-gold" onclick="document.getElementById('createModal').style.display='flex'">
+    <i class="fas fa-user-plus me-2"></i>New Admin
+  </button>
+</div>
+
+{% if success %}
+<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:.85rem;color:#4ade80;" data-aos="fade-down">
+  <i class="fas fa-check-circle me-2"></i>{{ success }}
+</div>
+{% endif %}
+{% if error %}
+<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:13px 18px;margin-bottom:20px;font-size:.85rem;color:#f87171;" data-aos="fade-down">
+  <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+</div>
+{% endif %}
+
+<!-- Admins table -->
+<div class="g-card" data-aos="fade-up">
+  <table class="h-table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Last Login</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for admin in admins %}
+      <tr>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar" style="width:32px;height:32px;font-size:.75rem;">{{ admin.username|first|upper }}</div>
+            <div>
+              <div style="font-weight:600;color:#fff;">{{ admin.username }}</div>
+              {% if admin.id == request.user.id %}
+              <div style="font-size:.65rem;color:rgba(201,168,76,.7);">You</div>
+              {% endif %}
+            </div>
+          </div>
+        </td>
+        <td>
+          {% if admin.is_superuser %}
+          <span style="background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold);padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;">Super Admin</span>
+          {% else %}
+          <span style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;padding:3px 10px;border-radius:20px;font-size:.7rem;">Staff</span>
+          {% endif %}
+        </td>
+        <td style="color:rgba(255,255,255,.4);font-size:.82rem;">
+          {% if admin.last_login %}{{ admin.last_login|date:"M d, Y H:i" }}{% else %}Never{% endif %}
+        </td>
+        <td style="text-align:right;">
+          <div class="d-flex gap-2 justify-content-end">
+            <button class="btn-og" onclick="openReset('{{ admin.id }}','{{ admin.username }}')" title="Reset password">
+              <i class="fas fa-key"></i>
+            </button>
+            {% if admin.id != request.user.id %}
+            <form method="post" style="display:inline;" onsubmit="return confirm('Delete admin {{ admin.username }}? This cannot be undone.')">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="user_id" value="{{ admin.id }}">
+              <button type="submit" class="btn-danger-og" title="Delete"><i class="fas fa-trash"></i></button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4"><div class="empty-state"><i class="fas fa-user-shield"></i>No admin accounts found.</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:#0f0f0c;border:1px solid rgba(245,240,232,.08);border-radius:16px;padding:28px;width:100%;max-width:440px;margin:20px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div style="font-weight:600;color:var(--gold);">Create New Admin</div>
+      <button class="btn-close-w" onclick="document.getElementById('createModal').style.display='none'">✕</button>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create">
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" placeholder="e.g. john_staff" required autocomplete="off">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Strong password" required autocomplete="new-password">
+      </div>
+      <div class="mb-4">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <input type="checkbox" name="is_superuser" style="accent-color:var(--gold);width:16px;height:16px;">
+          <div>
+            <div style="font-size:.84rem;color:#fff;">Super Admin</div>
+            <div style="font-size:.72rem;color:rgba(255,255,255,.35);">Full access including creating/deleting other admins</div>
+          </div>
+        </label>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-gold flex-grow-1"><i class="fas fa-user-plus me-2"></i>Create Admin</button>
+        <button type="button" class="btn-og" onclick="document.getElementById('createModal').style.display='none'">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div id="resetModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:#0f0f0c;border:1px solid rgba(245,240,232,.08);border-radius:16px;padding:28px;width:100%;max-width:400px;margin:20px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div style="font-weight:600;color:var(--gold);">Reset Password</div>
+      <button class="btn-close-w" onclick="document.getElementById('resetModal').style.display='none'">✕</button>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reset_password">
+      <input type="hidden" name="user_id" id="resetUserId">
+      <div class="mb-3">
+        <label class="form-label">Admin</label>
+        <div id="resetUsername" style="font-size:.9rem;font-weight:600;color:#fff;padding:6px 0;"></div>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">New Password</label>
+        <input type="password" name="new_password" class="form-control" placeholder="Enter new password" required autocomplete="new-password">
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-gold flex-grow-1"><i class="fas fa-key me-2"></i>Reset Password</button>
+        <button type="button" class="btn-og" onclick="document.getElementById('resetModal').style.display='none'">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openReset(id, name) {
+  document.getElementById('resetUserId').value = id;
+  document.getElementById('resetUsername').textContent = name;
+  document.getElementById('resetModal').style.display = 'flex';
+}
+// Close modals on backdrop click
+['createModal','resetModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+});
+</script>
+{% endblock %}

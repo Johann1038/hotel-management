@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -574,5 +575,64 @@ def modify_booking(request, booking_id):
     return render(request, 'user/modify_booking.html', {
         'booking': booking,
         'categories': _category_data(festive),
+        'error': error,
+    })
+
+
+@login_required(login_url='/login/')
+def staff_management(request):
+    success = None
+    error = None
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'create':
+            username = request.POST.get('username', '').strip()
+            password = request.POST.get('password', '').strip()
+            is_super = request.POST.get('is_superuser') == 'on'
+
+            if not username or not password:
+                error = 'Username and password are required.'
+            elif User.objects.filter(username=username).exists():
+                error = f'Username "{username}" is already taken.'
+            else:
+                user = User.objects.create_user(
+                    username=username, password=password,
+                    is_staff=True, is_superuser=is_super,
+                )
+                success = f'Admin "{user.username}" created successfully.'
+
+        elif action == 'delete':
+            uid = request.POST.get('user_id')
+            if str(uid) == str(request.user.id):
+                error = 'You cannot delete your own account.'
+            else:
+                try:
+                    u = User.objects.get(id=uid, is_staff=True)
+                    name = u.username
+                    u.delete()
+                    success = f'Admin "{name}" deleted.'
+                except User.DoesNotExist:
+                    error = 'User not found.'
+
+        elif action == 'reset_password':
+            uid = request.POST.get('user_id')
+            new_pw = request.POST.get('new_password', '').strip()
+            if not new_pw:
+                error = 'New password cannot be empty.'
+            else:
+                try:
+                    u = User.objects.get(id=uid, is_staff=True)
+                    u.set_password(new_pw)
+                    u.save()
+                    success = f'Password for "{u.username}" updated.'
+                except User.DoesNotExist:
+                    error = 'User not found.'
+
+    admins = User.objects.filter(is_staff=True).order_by('username')
+    return render(request, 'staff_management.html', {
+        'admins': admins,
+        'success': success,
         'error': error,
     })
