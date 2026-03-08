@@ -20,18 +20,46 @@
         </div>
         {% endif %}
 
+        <!-- Notice -->
+        <div style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:13px 18px;margin-bottom:24px;font-size:.82rem;color:rgba(245,240,232,.55);line-height:1.6;" data-aos="fade-up">
+          <i class="fas fa-info-circle me-2" style="color:#fbbf24;"></i>
+          You can modify dates, room type, and occupancy, or <strong style="color:#fbbf24;">add more rooms</strong> to your booking.
+          <strong style="color:#f87171;">Reducing the number of rooms is not allowed</strong> — please contact the front desk for cancellations.
+        </div>
+
+        <!-- Current rooms summary -->
+        {% if group_bookings|length > 1 %}
+        <div class="g-card p-4 mb-3" data-aos="fade-up">
+          <div style="font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Current Rooms ({{ group_bookings|length }})</div>
+          {% for b in group_bookings %}
+          <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:{% if not forloop.last %}1px solid rgba(255,255,255,.05){% else %}none{% endif %};">
+            <div style="font-size:.85rem;color:#fff;text-transform:capitalize;">
+              <span style="color:rgba(255,255,255,.35);font-size:.72rem;margin-right:8px;">Room {{ forloop.counter }}</span>
+              {{ b.room.room_type }}
+            </div>
+            <div style="font-size:.8rem;color:var(--gold);">₹{{ b.final_price }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Modify primary booking -->
         <form method="post" data-aos="fade-up">
           {% csrf_token %}
+          <input type="hidden" name="action" value="modify">
 
           <!-- Room Type -->
           <div class="g-card p-4 mb-3">
-            <div style="font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">Room Type</div>
+            <div style="font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">
+              {% if group_bookings|length > 1 %}Room 1 — {% endif %}Room Type
+            </div>
             <div class="row g-2">
               {% for cat in categories %}
               <div class="col-4">
                 <label style="cursor:pointer;display:block;">
-                  <input type="radio" name="room_type" value="{{ cat.type }}" {% if booking.room.room_type == cat.type %}checked{% endif %}
-                    style="display:none;" class="room-radio">
+                  <input type="radio" name="room_type" value="{{ cat.type }}"
+                    {% if booking.room.room_type == cat.type %}checked{% endif %}
+                    class="room-radio" style="display:none;">
                   <div class="room-type-tile text-center p-3" style="border:1px solid rgba(255,255,255,.1);border-radius:10px;transition:.2s;">
                     <div style="font-size:.85rem;font-weight:600;color:var(--gold);text-transform:capitalize;">{{ cat.label }}</div>
                     <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:2px;">₹{{ cat.price }}/night</div>
@@ -85,7 +113,7 @@
             </div>
           </div>
 
-          <div class="d-flex gap-3">
+          <div class="d-flex gap-3 mb-4">
             <button type="submit" class="btn-gold flex-grow-1" style="border:none;cursor:pointer;padding:13px;">
               <i class="fas fa-check me-2"></i>Save Changes
             </button>
@@ -93,32 +121,86 @@
           </div>
         </form>
 
+        <!-- Add Room -->
+        {% if group_bookings|length < 5 %}
+        <div class="g-card p-4" data-aos="fade-up" style="border-color:rgba(201,168,76,.15);">
+          <div style="font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">Add Another Room</div>
+          <p style="font-size:.78rem;color:rgba(255,255,255,.35);margin-bottom:16px;">
+            Same dates ({{ booking.check_in }} – {{ booking.check_out }}) · Same guest · Up to {{ 5|add:"-"|add:group_bookings|length }} more room{{ 5|add:"-"|add:group_bookings|length|pluralize }} allowed
+          </p>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_room">
+            <div class="row g-2 mb-3">
+              {% for cat in categories %}
+              <div class="col-4">
+                <label style="cursor:pointer;display:block;">
+                  <input type="radio" name="new_room_type" value="{{ cat.type }}" class="add-radio" style="display:none;" required>
+                  <div class="add-tile text-center p-3" style="border:1px solid rgba(255,255,255,.08);border-radius:10px;transition:.2s;">
+                    <div style="font-size:.82rem;font-weight:600;color:var(--gold);text-transform:capitalize;">{{ cat.label }}</div>
+                    <div style="font-size:.68rem;color:rgba(255,255,255,.35);margin-top:2px;">₹{{ cat.price }}/night</div>
+                    <div style="font-size:.62rem;color:{% if cat.count > 0 %}#4ade80{% else %}#f87171{% endif %};margin-top:3px;">{{ cat.count }} avail.</div>
+                  </div>
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label style="font-size:.72rem;color:rgba(255,255,255,.4);">Adults</label>
+                <select name="new_adults" class="form-control mt-1" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:9px 12px;">
+                  <option value="1">1 Adult</option>
+                  <option value="2">2 Adults</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label style="font-size:.72rem;color:rgba(255,255,255,.4);">Children</label>
+                <select name="new_children" class="form-control mt-1" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:9px 12px;">
+                  <option value="0">None</option>
+                  <option value="1">1 Child</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn-outline w-100" style="border:none;cursor:pointer;padding:11px;border:1px solid rgba(201,168,76,.3);color:var(--gold);">
+              <i class="fas fa-plus me-2"></i>Add Room to Booking
+            </button>
+          </form>
+        </div>
+        {% else %}
+        <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:13px 18px;font-size:.82rem;color:#f87171;" data-aos="fade-up">
+          <i class="fas fa-ban me-2"></i>Maximum of 5 rooms per booking reached.
+        </div>
+        {% endif %}
+
       </div>
     </div>
   </div>
 </section>
 
 <style>
-input[type=radio].room-radio:checked + .room-type-tile {
+.room-radio:checked + .room-type-tile,
+.add-radio:checked + .add-tile {
   border-color: var(--gold) !important;
   background: rgba(201,168,76,.08);
 }
-.room-type-tile:hover { border-color: rgba(201,168,76,.4) !important; }
+.room-type-tile:hover, .add-tile:hover { border-color: rgba(201,168,76,.4) !important; }
 </style>
 <script>
-document.querySelectorAll('.room-radio').forEach(r => {
-  r.addEventListener('change', () => {
-    document.querySelectorAll('.room-type-tile').forEach(t => {
-      t.style.borderColor = 'rgba(255,255,255,.1)';
-      t.style.background = '';
+function bindRadios(cls) {
+  document.querySelectorAll('.' + cls).forEach(r => {
+    r.addEventListener('change', () => {
+      document.querySelectorAll('.' + cls + ' + div').forEach(t => {
+        t.style.borderColor = ''; t.style.background = '';
+      });
+      if (r.checked) {
+        r.nextElementSibling.style.borderColor = 'var(--gold)';
+        r.nextElementSibling.style.background = 'rgba(201,168,76,.08)';
+      }
     });
-    if (r.checked) {
-      r.nextElementSibling.style.borderColor = 'var(--gold)';
-      r.nextElementSibling.style.background = 'rgba(201,168,76,.08)';
-    }
   });
-});
-// Highlight initial selection
-document.querySelector('.room-radio:checked')?.dispatchEvent(new Event('change'));
+  document.querySelector('.' + cls + ':checked')?.dispatchEvent(new Event('change'));
+}
+bindRadios('room-radio');
+bindRadios('add-radio');
 </script>
 {% endblock %}

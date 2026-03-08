@@ -509,71 +509,118 @@ def modify_booking(request, booking_id):
         Booking.objects.select_related('guest', 'room'), id=booking_id
     )
     festive = SiteSetting.get().festive_mode
+    group_bookings = list(
+        Booking.objects.filter(group_ref=booking.group_ref).select_related('room').order_by('id')
+    )
     error = None
 
     if request.method == 'POST':
-        check_in_str = request.POST.get('check_in', '').strip()
-        check_out_str = request.POST.get('check_out', '').strip()
-        new_type = request.POST.get('room_type', booking.room.room_type).strip()
-        try:
-            adults = int(request.POST.get('adults', booking.adults))
-            children = int(request.POST.get('children', booking.children))
-        except ValueError:
-            adults, children = booking.adults, booking.children
+        action = request.POST.get('action', 'modify')
 
-        if adults < 1 or adults > 2:
-            error = 'Each room accommodates 1–2 adults.'
-        elif children > 1:
-            error = 'Maximum 1 child per room.'
-        else:
+        if action == 'add_room':
+            new_type = request.POST.get('new_room_type', '').strip()
             try:
-                check_in = date.fromisoformat(check_in_str)
-                check_out = date.fromisoformat(check_out_str)
+                adults = int(request.POST.get('new_adults', 1))
+                children = int(request.POST.get('new_children', 0))
             except ValueError:
-                error = 'Invalid dates provided.'
+                adults, children = 1, 0
+
+            if not new_type:
+                error = 'Please select a room type.'
+            elif adults < 1 or adults > 2:
+                error = 'Each room accommodates 1–2 adults.'
+            elif children > 1:
+                error = 'Maximum 1 child per room.'
+            elif len(group_bookings) >= 5:
+                error = 'Maximum 5 rooms per booking.'
             else:
-                if (check_out - check_in).days <= 0:
-                    error = 'Check-out must be after check-in.'
+                used_ids = [b.room.id for b in group_bookings]
+                new_room = Room.objects.filter(
+                    status='available', room_type=new_type
+                ).exclude(id__in=used_ids).first()
+                if not new_room:
+                    error = f'No {new_type} rooms available right now.'
                 else:
-                    changes = []
+                    nb = Booking.objects.create(
+                        guest=booking.guest,
+                        room=new_room,
+                        check_in=booking.check_in,
+                        check_out=booking.check_out,
+                        discount_percent=booking.discount_percent,
+                        adults=adults,
+                        children=children,
+                        group_ref=booking.group_ref,
+                    )
+                    new_room.status = 'occupied'
+                    new_room.save()
+                    changes = [f'Added room: {new_type.capitalize()} (Booking #{nb.id})']
+                    _send_modification_confirmation(booking)
+                    _send_admin_modification_notification(booking, changes)
+                    return redirect('user_confirm', booking_id=booking.id)
 
-                    if new_type != booking.room.room_type:
-                        new_room = Room.objects.filter(
-                            status='available', room_type=new_type
-                        ).exclude(id=booking.room.id).first()
-                        if not new_room:
-                            error = f'No {new_type} rooms available right now.'
-                        else:
-                            changes.append(
-                                f'Room type: {booking.room.room_type.capitalize()} → {new_type.capitalize()}'
-                            )
-                            booking.room.status = 'available'
-                            booking.room.save()
-                            booking.room = new_room
-                            new_room.status = 'occupied'
-                            new_room.save()
+        else:
+            check_in_str = request.POST.get('check_in', '').strip()
+            check_out_str = request.POST.get('check_out', '').strip()
+            new_type = request.POST.get('room_type', booking.room.room_type).strip()
+            try:
+                adults = int(request.POST.get('adults', booking.adults))
+                children = int(request.POST.get('children', booking.children))
+            except ValueError:
+                adults, children = booking.adults, booking.children
 
-                    if not error:
-                        if check_in != booking.check_in or check_out != booking.check_out:
-                            changes.append(
-                                f'Dates: {booking.check_in} – {booking.check_out} → {check_in} – {check_out}'
-                            )
-                        if adults != booking.adults or children != booking.children:
-                            changes.append(
-                                f'Guests: {booking.adults} adult(s), {booking.children} child(ren) → {adults} adult(s), {children} child(ren)'
-                            )
-                        booking.check_in = check_in
-                        booking.check_out = check_out
-                        booking.adults = adults
-                        booking.children = children
-                        booking.save()
-                        if changes:
-                            _send_modification_confirmation(booking)
-                            _send_admin_modification_notification(booking, changes)
-                        return redirect('user_confirm', booking_id=booking.id)
+            if adults < 1 or adults > 2:
+                error = 'Each room accommodates 1–2 adults.'
+            elif children > 1:
+                error = 'Maximum 1 child per room.'
+            else:
+                try:
+                    check_in = date.fromisoformat(check_in_str)
+                    check_out = date.fromisoformat(check_out_str)
+                except ValueError:
+                    error = 'Invalid dates provided.'
+                else:
+                    if (check_out - check_in).days <= 0:
+                        error = 'Check-out must be after check-in.'
+                    else:
+                        changes = []
+                        if new_type != booking.room.room_type:
+                            new_room = Room.objects.filter(
+                                status='available', room_type=new_type
+                            ).exclude(id=booking.room.id).first()
+                            if not new_room:
+                                error = f'No {new_type} rooms available right now.'
+                            else:
+                                changes.append(
+                                    f'Room type: {booking.room.room_type.capitalize()} → {new_type.capitalize()}'
+                                )
+                                booking.room.status = 'available'
+                                booking.room.save()
+                                booking.room = new_room
+                                new_room.status = 'occupied'
+                                new_room.save()
+
+                        if not error:
+                            if check_in != booking.check_in or check_out != booking.check_out:
+                                changes.append(
+                                    f'Dates: {booking.check_in} – {booking.check_out} → {check_in} – {check_out}'
+                                )
+                            if adults != booking.adults or children != booking.children:
+                                changes.append(
+                                    f'Guests: {booking.adults} adult(s), {booking.children} child(ren) → {adults} adult(s), {children} child(ren)'
+                                )
+                            booking.check_in = check_in
+                            booking.check_out = check_out
+                            booking.adults = adults
+                            booking.children = children
+                            booking.save()
+                            if changes:
+                                _send_modification_confirmation(booking)
+                                _send_admin_modification_notification(booking, changes)
+                            return redirect('user_confirm', booking_id=booking.id)
 
     return render(request, 'user/modify_booking.html', {
         'booking': booking,
+        'group_bookings': group_bookings,
         'categories': _category_data(festive),
         'error': error,
     })
