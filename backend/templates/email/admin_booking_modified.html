@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Booking Modified — {{ hotel_name }} Admin</title></head>
+<body style="margin:0;padding:0;background:#f4f0e8;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;padding:40px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+      <tr>
+        <td style="background:linear-gradient(135deg,#080806,#141208);border-radius:16px 16px 0 0;padding:32px 40px;text-align:center;">
+          <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#c9a84c;letter-spacing:3px;">GRAND HOTEL</div>
+          <div style="font-size:10px;color:rgba(245,240,232,.4);letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Admin Notification</div>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="background:#0f0f0c;padding:28px 40px;">
+          <div style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:16px 20px;margin-bottom:20px;">
+            <div style="font-size:13px;font-weight:600;color:#fbbf24;margin-bottom:4px;">⚠ Booking Modified by Guest</div>
+            <div style="font-size:12px;color:rgba(245,240,232,.5);">A guest has updated their reservation. Details below.</div>
+          </div>
+
+          <table width="100%" cellpadding="0" cellspacing="0"
+            style="background:rgba(245,240,232,.04);border:1px solid rgba(245,240,232,.08);border-radius:10px;overflow:hidden;margin-bottom:16px;">
+            <tr>
+              <td style="padding:16px 20px;border-bottom:1px solid rgba(245,240,232,.06);">
+                <span style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;">Booking</span>
+                <div style="font-size:18px;font-weight:700;color:#c9a84c;margin-top:2px;">#{{ booking.id }}</div>
+              </td>
+              <td style="padding:16px 20px;border-bottom:1px solid rgba(245,240,232,.06);text-align:right;">
+                <div style="font-size:13px;font-weight:600;color:#f5f0e8;">{{ booking.guest.name }}</div>
+                <div style="font-size:11px;color:rgba(245,240,232,.4);">{{ booking.guest.email }}</div>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:16px 20px;">
+                <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">What Changed</div>
+                {% for change in changes %}
+                <div style="font-size:13px;color:#f5f0e8;padding:6px 0;border-bottom:1px solid rgba(245,240,232,.04);">
+                  <span style="color:#fbbf24;margin-right:8px;">→</span>{{ change }}
+                </div>
+                {% endfor %}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 20px;background:rgba(201,168,76,.04);">
+                <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">New Check-in</div>
+                <div style="font-size:14px;font-weight:600;color:#f5f0e8;">{{ booking.check_in }}</div>
+              </td>
+              <td style="padding:16px 20px;background:rgba(201,168,76,.04);">
+                <div style="font-size:11px;color:rgba(245,240,232,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">New Check-out</div>
+                <div style="font-size:14px;font-weight:600;color:#f5f0e8;">{{ booking.check_out }}</div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="background:#080806;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid rgba(245,240,232,.05);">
+          <p style="font-size:11px;color:rgba(245,240,232,.2);margin:0;">{{ hotel_name }} — Admin Notification System</p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

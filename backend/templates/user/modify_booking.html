@@ -1,0 +1,124 @@
+{% extends 'user/base.html' %}
+{% block title %}Modify Booking #{{ booking.id }} — Grand Hotel{% endblock %}
+
+{% block content %}
+<div class="pt-nav"></div>
+<section class="section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+
+        <div class="text-center mb-5" data-aos="fade-up">
+          <h2 class="section-title">Modify Booking</h2>
+          <div class="gold-line center"></div>
+          <p class="section-sub">Booking #{{ booking.id }} &mdash; {{ booking.guest.name }}</p>
+        </div>
+
+        {% if error %}
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px 18px;font-size:.85rem;color:#f87171;margin-bottom:20px;" data-aos="fade-up">
+          <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" data-aos="fade-up">
+          {% csrf_token %}
+
+          <!-- Room Type -->
+          <div class="g-card p-4 mb-3">
+            <div style="font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">Room Type</div>
+            <div class="row g-2">
+              {% for cat in categories %}
+              <div class="col-4">
+                <label style="cursor:pointer;display:block;">
+                  <input type="radio" name="room_type" value="{{ cat.type }}" {% if booking.room.room_type == cat.type %}checked{% endif %}
+                    style="display:none;" class="room-radio">
+                  <div class="room-type-tile text-center p-3" style="border:1px solid rgba(255,255,255,.1);border-radius:10px;transition:.2s;">
+                    <div style="font-size:.85rem;font-weight:600;color:var(--gold);text-transform:capitalize;">{{ cat.label }}</div>
+                    <div style="font-size:.72rem;color:rgba(255,255,255,.4);margin-top:2px;">₹{{ cat.price }}/night</div>
+                    <div style="font-size:.65rem;color:{% if cat.count > 0 %}#4ade80{% else %}#f87171{% endif %};margin-top:4px;">
+                      {{ cat.count }} available
+                    </div>
+                  </div>
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Dates -->
+          <div class="g-card p-4 mb-3">
+            <div style="font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">Stay Dates</div>
+            <div class="row g-3">
+              <div class="col-6">
+                <label style="font-size:.75rem;color:rgba(255,255,255,.4);">Check-in</label>
+                <input type="date" name="check_in" value="{{ booking.check_in|date:'Y-m-d' }}" required
+                  class="form-control mt-1"
+                  style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:10px 12px;">
+              </div>
+              <div class="col-6">
+                <label style="font-size:.75rem;color:rgba(255,255,255,.4);">Check-out</label>
+                <input type="date" name="check_out" value="{{ booking.check_out|date:'Y-m-d' }}" required
+                  class="form-control mt-1"
+                  style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:10px 12px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Occupancy -->
+          <div class="g-card p-4 mb-4">
+            <div style="font-size:.7rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;">Occupancy</div>
+            <div class="row g-3">
+              <div class="col-6">
+                <label style="font-size:.75rem;color:rgba(255,255,255,.4);">Adults <span style="color:rgba(255,255,255,.25);">(max 2)</span></label>
+                <select name="adults" class="form-control mt-1" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:10px 12px;">
+                  <option value="1" {% if booking.adults == 1 %}selected{% endif %}>1 Adult</option>
+                  <option value="2" {% if booking.adults == 2 %}selected{% endif %}>2 Adults</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label style="font-size:.75rem;color:rgba(255,255,255,.4);">Children <span style="color:rgba(255,255,255,.25);">(max 1)</span></label>
+                <select name="children" class="form-control mt-1" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:8px;padding:10px 12px;">
+                  <option value="0" {% if booking.children == 0 %}selected{% endif %}>None</option>
+                  <option value="1" {% if booking.children == 1 %}selected{% endif %}>1 Child</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn-gold flex-grow-1" style="border:none;cursor:pointer;padding:13px;">
+              <i class="fas fa-check me-2"></i>Save Changes
+            </button>
+            <a href="{% url 'my_bookings' %}" class="btn-outline" style="padding:13px 20px;">Cancel</a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+input[type=radio].room-radio:checked + .room-type-tile {
+  border-color: var(--gold) !important;
+  background: rgba(201,168,76,.08);
+}
+.room-type-tile:hover { border-color: rgba(201,168,76,.4) !important; }
+</style>
+<script>
+document.querySelectorAll('.room-radio').forEach(r => {
+  r.addEventListener('change', () => {
+    document.querySelectorAll('.room-type-tile').forEach(t => {
+      t.style.borderColor = 'rgba(255,255,255,.1)';
+      t.style.background = '';
+    });
+    if (r.checked) {
+      r.nextElementSibling.style.borderColor = 'var(--gold)';
+      r.nextElementSibling.style.background = 'rgba(201,168,76,.08)';
+    }
+  });
+});
+// Highlight initial selection
+document.querySelector('.room-radio:checked')?.dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

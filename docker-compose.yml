@@ -16,6 +16,7 @@ services:
     command: >
       sh -c "until python -c \"import socket; s=socket.socket(); s.connect(('db',5432)); s.close()\" 2>/dev/null; do echo 'Waiting for db...'; sleep 1; done &&
              python manage.py migrate &&
+             python manage.py create_rooms &&
              gunicorn hotel.wsgi:application --bind 0.0.0.0:8000 --workers 2"
     volumes:
       - ./backend:/app/backend

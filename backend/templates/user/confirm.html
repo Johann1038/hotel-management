@@ -124,6 +124,7 @@
 
         <!-- Actions -->
         <div class="d-flex gap-3 justify-content-center flex-wrap" data-aos="fade-up">
+          <a href="{% url 'modify_booking' booking.id %}" class="btn-outline"><i class="fas fa-edit me-2"></i>Modify Booking</a>
           <a href="{% url 'user_book' %}" class="btn-gold"><i class="fas fa-plus me-2"></i>New Booking</a>
           <a href="{% url 'user_home' %}" class="btn-outline"><i class="fas fa-home me-2"></i>Back to Home</a>
         </div>

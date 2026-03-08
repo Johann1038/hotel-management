@@ -48,6 +48,57 @@ def _send_booking_confirmation(primary_booking, all_bookings=None):
         print(f'[Email] Confirmation failed: {e}')
 
 
+def _send_modification_confirmation(booking):
+    try:
+        subject = f'Booking Modified — {HOTEL_NAME} | Booking #{booking.id}'
+        html = render_to_string('email/booking_modified.html', {
+            'booking': booking,
+            'hotel_name': HOTEL_NAME,
+            'hotel_email': settings.HOTEL_EMAIL,
+        })
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=(
+                f'Dear {booking.guest.name},\n\n'
+                f'Your booking #{booking.id} has been updated.\n'
+                f'Check-in: {booking.check_in}  Check-out: {booking.check_out}\n'
+                f'Room: {booking.room.room_type.capitalize()}\n'
+                f'Thank you for choosing {HOTEL_NAME}!'
+            ),
+            from_email=f'{HOTEL_NAME} <{settings.HOTEL_EMAIL}>',
+            to=[booking.guest.email],
+        )
+        msg.attach_alternative(html, 'text/html')
+        msg.send()
+    except Exception as e:
+        print(f'[Email] Modification confirmation failed: {e}')
+
+
+def _send_admin_modification_notification(booking, changes):
+    try:
+        subject = f'Booking #{booking.id} Modified by Guest — {HOTEL_NAME}'
+        html = render_to_string('email/admin_booking_modified.html', {
+            'booking': booking,
+            'changes': changes,
+            'hotel_name': HOTEL_NAME,
+        })
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=(
+                f'Booking #{booking.id} was modified by {booking.guest.name} ({booking.guest.email}).\n'
+                f'Changes: {", ".join(changes)}\n'
+                f'New dates: {booking.check_in} to {booking.check_out}\n'
+                f'Room type: {booking.room.room_type}'
+            ),
+            from_email=f'{HOTEL_NAME} <{settings.HOTEL_EMAIL}>',
+            to=[settings.HOTEL_EMAIL],
+        )
+        msg.attach_alternative(html, 'text/html')
+        msg.send()
+    except Exception as e:
+        print(f'[Email] Admin modification notification failed: {e}')
+
+
 def _send_reassignment_email(booking, old_number, new_number):
     try:
         subject = f'Room Update — Booking #{booking.id} | {HOTEL_NAME}'
@@ -423,4 +474,105 @@ def user_confirm(request, booking_id):
     return render(request, 'user/confirm.html', {
         'booking': booking,
         'group_bookings': group_bookings,
+    })
+
+
+def my_bookings(request):
+    from datetime import date
+    bookings = []
+    email = ''
+    error = None
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if email:
+            bookings = list(
+                Booking.objects.filter(guest__email=email)
+                .select_related('guest', 'room')
+                .order_by('-check_in')
+            )
+            if not bookings:
+                error = 'No bookings found for this email address.'
+        else:
+            error = 'Please enter your email address.'
+    return render(request, 'user/my_bookings.html', {
+        'bookings': bookings,
+        'email': email,
+        'error': error,
+        'today': date.today(),
+    })
+
+
+def modify_booking(request, booking_id):
+    from datetime import date
+    booking = get_object_or_404(
+        Booking.objects.select_related('guest', 'room'), id=booking_id
+    )
+    festive = SiteSetting.get().festive_mode
+    error = None
+
+    if request.method == 'POST':
+        check_in_str = request.POST.get('check_in', '').strip()
+        check_out_str = request.POST.get('check_out', '').strip()
+        new_type = request.POST.get('room_type', booking.room.room_type).strip()
+        try:
+            adults = int(request.POST.get('adults', booking.adults))
+            children = int(request.POST.get('children', booking.children))
+        except ValueError:
+            adults, children = booking.adults, booking.children
+
+        if adults < 1 or adults > 2:
+            error = 'Each room accommodates 1–2 adults.'
+        elif children > 1:
+            error = 'Maximum 1 child per room.'
+        else:
+            try:
+                check_in = date.fromisoformat(check_in_str)
+                check_out = date.fromisoformat(check_out_str)
+            except ValueError:
+                error = 'Invalid dates provided.'
+            else:
+                if (check_out - check_in).days <= 0:
+                    error = 'Check-out must be after check-in.'
+                else:
+                    changes = []
+
+                    if new_type != booking.room.room_type:
+                        new_room = Room.objects.filter(
+                            status='available', room_type=new_type
+                        ).exclude(id=booking.room.id).first()
+                        if not new_room:
+                            error = f'No {new_type} rooms available right now.'
+                        else:
+                            changes.append(
+                                f'Room type: {booking.room.room_type.capitalize()} → {new_type.capitalize()}'
+                            )
+                            booking.room.status = 'available'
+                            booking.room.save()
+                            booking.room = new_room
+                            new_room.status = 'occupied'
+                            new_room.save()
+
+                    if not error:
+                        if check_in != booking.check_in or check_out != booking.check_out:
+                            changes.append(
+                                f'Dates: {booking.check_in} – {booking.check_out} → {check_in} – {check_out}'
+                            )
+                        if adults != booking.adults or children != booking.children:
+                            changes.append(
+                                f'Guests: {booking.adults} adult(s), {booking.children} child(ren) → {adults} adult(s), {children} child(ren)'
+                            )
+                        booking.check_in = check_in
+                        booking.check_out = check_out
+                        booking.adults = adults
+                        booking.children = children
+                        booking.save()
+                        if changes:
+                            _send_modification_confirmation(booking)
+                            _send_admin_modification_notification(booking, changes)
+                        return redirect('user_confirm', booking_id=booking.id)
+
+    return render(request, 'user/modify_booking.html', {
+        'booking': booking,
+        'categories': _category_data(festive),
+        'error': error,
     })
