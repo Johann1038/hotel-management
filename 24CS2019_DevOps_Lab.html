@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>24CS2019 – DevOps Laboratory | End Sem Answers</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet"/>
+<style>
+/* ─── TOKENS ─────────────────────────────────────── */
+:root {
+  --bg:        #f7f8fc;
+  --surface:   #ffffff;
+  --surface2:  #f0f3fb;
+  --border:    #e4e9f5;
+  --border2:   #cdd5eb;
+
+  --blue:      #2563eb;
+  --blue-lt:   #eff4ff;
+  --blue-mid:  #dbeafe;
+  --green:     #16a34a;
+  --green-lt:  #f0fdf4;
+  --amber:     #b45309;
+  --amber-lt:  #fffbeb;
+  --red:       #dc2626;
+  --red-lt:    #fef2f2;
+  --teal:      #0d9488;
+  --teal-lt:   #f0fdfa;
+  --violet:    #7c3aed;
+  --violet-lt: #f5f3ff;
+
+  --text:      #111827;
+  --text2:     #374151;
+  --muted:     #6b7280;
+  --faint:     #9ca3af;
+
+  --code-bg:   #1a1f35;
+  --code-bar:  #13172a;
+  --code-border: #2e3557;
+  --code-text: #cdd9f5;
+
+  --radius-card: 16px;
+  --radius-code: 10px;
+  --shadow-card: 0 1px 3px #0000000a, 0 4px 16px #2563eb08;
+  --shadow-hover: 0 4px 20px #2563eb14;
+}
+
+/* ─── RESET ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ─── HERO HEADER ────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #3b82f6 100%);
+  padding: 3rem 2rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 100%, #1e40af55, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 0%,   #93c5fd30, transparent 60%);
+  pointer-events: none;
+}
+.hero-inner { position: relative; z-index: 1; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-family: 'DM Mono', monospace;
+  font-size: .7rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #bfdbfe;
+  background: #ffffff1a;
+  border: 1px solid #93c5fd40;
+  padding: .3rem .9rem;
+  border-radius: 100px;
+  margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+  margin-bottom: .6rem;
+}
+.hero h1 em { font-style: normal; color: #bfdbfe; }
+.hero p {
+  color: #93c5fd;
+  font-size: .95rem;
+  font-weight: 400;
+}
+.hero-chips {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem;
+  margin-top: 1.4rem;
+}
+.hero-chip {
+  font-size: .72rem;
+  font-family: 'DM Mono', monospace;
+  padding: .25rem .75rem;
+  border-radius: 100px;
+  background: #ffffff18;
+  color: #dbeafe;
+  border: 1px solid #93c5fd30;
+}
+
+/* ─── INSTALL BANNER ─────────────────────────────── */
+.install-banner {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0;
+}
+.install-inner {
+  max-width: 1040px; margin: 0 auto; padding: 0 1.5rem;
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem;
+}
+.install-label {
+  font-size: .72rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-right: .4rem;
+}
+.install-pill {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .78rem;
+  font-family: 'DM Mono', monospace;
+  padding: .25rem .7rem;
+  border-radius: 100px;
+  border: 1px solid;
+  font-weight: 500;
+}
+.ip-git    { color:#1d4ed8; border-color:#bfdbfe; background:#eff6ff; }
+.ip-python { color:#c2410c; border-color:#fed7aa; background:#fff7ed; }
+.ip-docker { color:#0369a1; border-color:#bae6fd; background:#f0f9ff; }
+.ip-k8s    { color:#7c3aed; border-color:#ddd6fe; background:#f5f3ff; }
+.ip-jenkins{ color:#15803d; border-color:#bbf7d0; background:#f0fdf4; }
+.ip-github { color:#374151; border-color:#d1d5db; background:#f9fafb; }
+
+/* ─── LAYOUT ─────────────────────────────────────── */
+.wrapper {
+  max-width: 1040px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+/* ─── SIDEBAR TOC ────────────────────────────────── */
+.sidebar {
+  position: sticky; top: 1.5rem;
+}
+.sidebar-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1.2rem;
+  box-shadow: var(--shadow-card);
+}
+.sidebar-title {
+  font-size: .68rem;
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: .9rem;
+  padding-bottom: .7rem;
+  border-bottom: 1px solid var(--border);
+}
+.toc-list { list-style: none; }
+.toc-list li + li { margin-top: .15rem; }
+.toc-list a {
+  display: flex; align-items: center; gap: .55rem;
+  padding: .38rem .5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text2);
+  font-size: .82rem;
+  transition: background .15s, color .15s;
+  line-height: 1.3;
+}
+.toc-list a:hover { background: var(--blue-lt); color: var(--blue); }
+.toc-n {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  font-weight: 500;
+  color: var(--blue);
+  background: var(--blue-lt);
+  border: 1px solid var(--blue-mid);
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── MAIN CONTENT ───────────────────────────────── */
+.main { min-width: 0; }
+
+/* ─── QUESTION CARD ──────────────────────────────── */
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  margin-bottom: 2rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow .2s;
+  scroll-margin-top: 1.5rem;
+}
+.q-card:hover { box-shadow: var(--shadow-hover); }
+
+.q-head {
+  display: flex; align-items: flex-start; gap: 1rem;
+  padding: 1.2rem 1.5rem 1rem;
+  background: linear-gradient(90deg, var(--blue-lt) 0%, #f8faff 100%);
+  border-bottom: 1px solid var(--border);
+}
+.q-num {
+  font-family: 'DM Mono', monospace;
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--blue);
+  background: var(--blue-mid);
+  border: 1px solid #93c5fd;
+  padding: .2rem .55rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: .2rem;
+  letter-spacing: .04em;
+}
+.q-title-wrap { flex: 1; }
+.q-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.45;
+}
+.q-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+.tag {
+  font-size: .68rem;
+  font-family: 'DM Mono', monospace;
+  padding: .15rem .55rem;
+  border-radius: 100px;
+  border: 1px solid;
+}
+.t-git    { color:#1d4ed8; border-color:#93c5fd; background:#eff6ff; }
+.t-docker { color:#0369a1; border-color:#7dd3fc; background:#f0f9ff; }
+.t-ci     { color:#15803d; border-color:#86efac; background:#f0fdf4; }
+.t-k8s    { color:#7c3aed; border-color:#c4b5fd; background:#f5f3ff; }
+.t-py     { color:#c2410c; border-color:#fdba74; background:#fff7ed; }
+.t-jen    { color:#065f46; border-color:#6ee7b7; background:#ecfdf5; }
+.t-hub    { color:#374151; border-color:#d1d5db; background:#f9fafb; }
+
+.q-body { padding: 1.4rem 1.5rem; }
+
+/* ─── STEP ───────────────────────────────────────── */
+.step { margin-bottom: 1.5rem; }
+.step:last-child { margin-bottom: 0; }
+.step-label {
+  display: inline-flex; align-items: center; gap: .45rem;
+  font-size: .7rem;
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: .55rem;
+}
+.step-label::before {
+  content: '';
+  width: 14px; height: 2px;
+  background: var(--blue);
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ─── CODE ───────────────────────────────────────── */
+.codeblock {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius-code);
+  overflow: hidden;
+  margin: .5rem 0;
+  box-shadow: 0 2px 8px #00000018;
+}
+.cb-bar {
+  background: var(--code-bar);
+  padding: .3rem .9rem;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--code-border);
+}
+.cb-lang {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  color: #6b7db5;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.cb-copy {
+  background: none; border: none; cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  color: #6b7db5;
+  padding: .1rem .45rem;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+.cb-copy:hover { color: #93c5fd; background: #ffffff14; }
+pre {
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: .8rem;
+  line-height: 1.75;
+  color: var(--code-text);
+  tab-size: 2;
+}
+/* syntax colours */
+.kw  { color: #f87171; }
+.str { color: #86efac; }
+.cmt { color: #4b5a8a; font-style: italic; }
+.fn  { color: #c4b5fd; }
+.num { color: #7dd3fc; }
+.cmd { color: #34d399; }
+.ky2 { color: #fbbf24; }
+
+/* ─── CALLOUT BOXES ──────────────────────────────── */
+.callout {
+  display: flex; gap: .7rem;
+  padding: .85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: .875rem;
+  margin: .6rem 0;
+  line-height: 1.55;
+}
+.callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: .05rem; }
+.c-info  { background: var(--blue-lt);  border-color: var(--blue-mid);  color: #1e3a8a; }
+.c-tip   { background: var(--green-lt); border-color: #bbf7d0;          color: #14532d; }
+.c-warn  { background: var(--amber-lt); border-color: #fde68a;          color: #78350f; }
+.c-note  { background: var(--violet-lt);border-color: #ddd6fe;          color: #4c1d95; }
+
+/* ─── OUTPUT LABEL ───────────────────────────────── */
+.out-label {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .7rem;
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--green);
+  margin-top: .9rem; margin-bottom: .3rem;
+}
+.out-label::before {
+  content: '✓';
+  font-size: .75rem;
+}
+
+/* ─── DIVIDER ────────────────────────────────────── */
+.qdivider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.2rem 0;
+}
+
+/* ─── BACK TO TOP ────────────────────────────────── */
+.back-top {
+  display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .75rem; font-family: 'DM Mono', monospace;
+  color: var(--muted); text-decoration: none;
+  margin-top: .5rem;
+  transition: color .15s;
+}
+.back-top:hover { color: var(--blue); }
+
+/* ─── FOOTER ─────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .wrapper { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .install-inner { gap: .4rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <div class="hero-badge">24CS2019 · DevOps Laboratory</div>
+    <h1>End Semester <em>Practical Answers</em></h1>
+    <p>Division of Computer Science &amp; Engineering · Karunya Institute of Technology and Sciences</p>
+    <div class="hero-chips">
+      <span class="hero-chip">Git &amp; GitHub</span>
+      <span class="hero-chip">Docker</span>
+      <span class="hero-chip">Flask / Python</span>
+      <span class="hero-chip">Jenkins in Docker</span>
+      <span class="hero-chip">GitHub Actions</span>
+      <span class="hero-chip">Kubernetes / kubectl</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ INSTALL BANNER ═══════════════ -->
+<div class="install-banner">
+  <div class="install-inner">
+    <span class="install-label">Lab Setup →</span>
+    <span class="install-pill ip-git">Git</span>
+    <span class="install-pill ip-python">Python 3.11+  &amp; pip</span>
+    <span class="install-pill ip-docker">Docker Engine</span>
+    <span class="install-pill ip-jenkins">Jenkins (via Docker)</span>
+    <span class="install-pill ip-k8s">kubectl + Minikube</span>
+    <span class="install-pill ip-github">GitHub account</span>
+    <span class="install-pill ip-docker">Docker Hub account</span>
+  </div>
+</div>
+
+<!-- ═══════════════ BODY GRID ═══════════════ -->
+<div class="wrapper">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-box">
+      <div class="sidebar-title">// Questions</div>
+      <ul class="toc-list">
+        <li><a href="#q1"><span class="toc-n">1</span> Git Operations &amp; PR</a></li>
+        <li><a href="#q2"><span class="toc-n">2</span> Dockerise Flask + Hub</a></li>
+        <li><a href="#q3"><span class="toc-n">3</span> Monolithic App</a></li>
+        <li><a href="#q4"><span class="toc-n">4</span> CI – GitHub Actions</a></li>
+        <li><a href="#q5"><span class="toc-n">5</span> Jenkins Pipeline</a></li>
+        <li><a href="#q6"><span class="toc-n">6</span> kubectl Basics</a></li>
+        <li><a href="#q7"><span class="toc-n">7</span> Actions Auto Push</a></li>
+        <li><a href="#q8"><span class="toc-n">8</span> Containerise Flask</a></li>
+        <li><a href="#q9"><span class="toc-n">9</span> Clone Modify Push</a></li>
+        <li><a href="#q10"><span class="toc-n">10</span> Actions Build &amp; Test</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ══════════════════════════════════ Q1 -->
+    <div class="q-card" id="q1">
+      <div class="q-head">
+        <span class="q-num">Q 01</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Perform Git operations to commit, push, merge branches, and create a pull request on GitHub.</div>
+          <div class="q-tags">
+            <span class="tag t-git">Git</span>
+            <span class="tag t-hub">GitHub</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+
+        <div class="step">
+          <div class="step-label">Step 1 – Initialise repo &amp; first commit</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmt"># Initialise a local repository</span>
+<span class="cmd">git init myproject</span>
+<span class="cmd">cd myproject</span>
+
+<span class="cmt"># Create a file and make the first commit</span>
+<span class="cmd">echo "# My DevOps Project" > README.md</span>
+<span class="cmd">git add README.md</span>
+<span class="cmd">git commit -m "Initial commit: add README"</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 2 – Create a feature branch &amp; make changes</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">git checkout -b feature/hello</span>
+
+<span class="cmd">echo "Hello from feature branch" > hello.txt</span>
+<span class="cmd">git add hello.txt</span>
+<span class="cmd">git commit -m "feat: add hello.txt"</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 3 – Push to GitHub &amp; open Pull Request</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmt"># Connect to remote (first time only)</span>
+<span class="cmd">git remote add origin https://github.com/&lt;username&gt;/myproject.git</span>
+<span class="cmd">git push -u origin feature/hello</span></pre></div>
+          <div class="callout c-info"><span class="callout-icon">ℹ️</span><span>On GitHub → go to your repo → click <strong>Compare &amp; pull request</strong> → add a description → click <strong>Create pull request</strong>.</span></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 4 – Merge &amp; push main</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">git checkout main</span>
+<span class="cmd">git merge feature/hello</span>
+<span class="cmd">git push origin main</span>
+<span class="cmd">git log --oneline --graph</span></pre></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q2 -->
+    <div class="q-card" id="q2">
+      <div class="q-head">
+        <span class="q-num">Q 02</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Containerise a Flask application using Docker and deploy the image to Docker Hub.</div>
+          <div class="q-tags">
+            <span class="tag t-docker">Docker</span>
+            <span class="tag t-py">Flask</span>
+            <span class="tag t-hub">Docker Hub</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+
+        <div class="step">
+          <div class="step-label">app.py</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">python</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="kw">from</span> flask <span class="kw">import</span> Flask
+app = Flask(__name__)
+
+<span class="fn">@app.route</span>(<span class="str">'/'</span>)
+<span class="kw">def</span> <span class="fn">home</span>():
+    <span class="kw">return</span> <span class="str">"Hello from Dockerised Flask!"</span>
+
+<span class="kw">if</span> __name__ == <span class="str">'__main__'</span>:
+    app.run(host=<span class="str">'0.0.0.0'</span>, port=<span class="num">5000</span>)</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">requirements.txt</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">text</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre>flask</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Dockerfile</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">dockerfile</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="kw">FROM</span> python:3.11-slim
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> requirements.txt .
+<span class="kw">RUN</span> pip install -r requirements.txt
+<span class="kw">COPY</span> . .
+<span class="kw">EXPOSE</span> <span class="num">5000</span>
+<span class="kw">CMD</span> [<span class="str">"python"</span>, <span class="str">"app.py"</span>]</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Build, run &amp; push to Docker Hub</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmt"># Build</span>
+<span class="cmd">docker build -t &lt;dockerhub-username&gt;/flask-app:latest .</span>
+
+<span class="cmt"># Test locally → visit http://localhost:5000</span>
+<span class="cmd">docker run -d -p 5000:5000 &lt;dockerhub-username&gt;/flask-app:latest</span>
+
+<span class="cmt"># Login and push</span>
+<span class="cmd">docker login</span>
+<span class="cmd">docker push &lt;dockerhub-username&gt;/flask-app:latest</span></pre></div>
+        </div>
+
+        <div class="out-label">Expected Output</div>
+        <div class="callout c-tip"><span class="callout-icon">✅</span><span>Browser shows <strong>Hello from Dockerised Flask!</strong> — Image visible on Docker Hub under your repository.</span></div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q3 -->
+    <div class="q-card" id="q3">
+      <div class="q-head">
+        <span class="q-num">Q 03</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Develop and demonstrate a simple monolithic application model using Python or Flask.</div>
+          <div class="q-tags">
+            <span class="tag t-py">Python</span>
+            <span class="tag t-py">Flask</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+        <div class="callout c-note"><span class="callout-icon">📖</span><span>A <strong>monolithic app</strong> bundles all features — UI, business logic, and data — into a single deployable unit. Below is a Student CRUD REST API in Flask.</span></div>
+
+        <div class="step" style="margin-top:1rem">
+          <div class="step-label">app.py – Complete monolithic app</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">python</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="kw">from</span> flask <span class="kw">import</span> Flask, request, jsonify
+
+app = Flask(__name__)
+students = {}
+next_id = <span class="num">1</span>
+
+<span class="fn">@app.route</span>(<span class="str">'/students'</span>, methods=[<span class="str">'GET'</span>])
+<span class="kw">def</span> <span class="fn">get_students</span>():
+    <span class="kw">return</span> jsonify(list(students.values()))
+
+<span class="fn">@app.route</span>(<span class="str">'/students'</span>, methods=[<span class="str">'POST'</span>])
+<span class="kw">def</span> <span class="fn">add_student</span>():
+    <span class="kw">global</span> next_id
+    data = request.get_json()
+    student = {<span class="str">'id'</span>: next_id, <span class="str">'name'</span>: data[<span class="str">'name'</span>], <span class="str">'roll'</span>: data[<span class="str">'roll'</span>]}
+    students[next_id] = student
+    next_id += <span class="num">1</span>
+    <span class="kw">return</span> jsonify(student), <span class="num">201</span>
+
+<span class="fn">@app.route</span>(<span class="str">'/students/&lt;int:sid&gt;'</span>, methods=[<span class="str">'DELETE'</span>])
+<span class="kw">def</span> <span class="fn">delete_student</span>(sid):
+    students.pop(sid, <span class="kw">None</span>)
+    <span class="kw">return</span> jsonify({<span class="str">'msg'</span>: <span class="str">'Deleted'</span>})
+
+<span class="kw">if</span> __name__ == <span class="str">'__main__'</span>:
+    app.run(debug=<span class="kw">True</span>)</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Run &amp; test with curl</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">pip install flask</span>
+<span class="cmd">python app.py</span>
+
+<span class="cmt"># Add a student</span>
+<span class="cmd">curl -X POST http://localhost:5000/students \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Alice","roll":"CS001"}'</span>
+
+<span class="cmt"># List all students</span>
+<span class="cmd">curl http://localhost:5000/students</span></pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q4 -->
+    <div class="q-card" id="q4">
+      <div class="q-head">
+        <span class="q-num">Q 04</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Create a CI pipeline using GitHub Actions to build and push a Docker image of a Python app to Docker Hub.</div>
+          <div class="q-tags">
+            <span class="tag t-ci">GitHub Actions</span>
+            <span class="tag t-docker">Docker</span>
+            <span class="tag t-py">Python</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+
+        <div class="step">
+          <div class="step-label">Step 1 – Add secrets to GitHub repo</div>
+          <div class="callout c-info"><span class="callout-icon">🔐</span><span>Repo → <strong>Settings → Secrets and variables → Actions</strong> → New repository secret:<br><code>DOCKER_USERNAME</code> — your Docker Hub username<br><code>DOCKER_PASSWORD</code> — your Docker Hub access token</span></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">.github/workflows/docker-publish.yml</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">yaml</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="ky2">name:</span> Build and Push Docker Image
+
+<span class="ky2">on:</span>
+  <span class="ky2">push:</span>
+    <span class="ky2">branches:</span> [ main ]
+
+<span class="ky2">jobs:</span>
+  <span class="ky2">build-push:</span>
+    <span class="ky2">runs-on:</span> ubuntu-latest
+    <span class="ky2">steps:</span>
+      - <span class="ky2">name:</span> Checkout code
+        <span class="ky2">uses:</span> actions/checkout@v3
+
+      - <span class="ky2">name:</span> Log in to Docker Hub
+        <span class="ky2">uses:</span> docker/login-action@v3
+        <span class="ky2">with:</span>
+          <span class="ky2">username:</span> <span class="str">${{ secrets.DOCKER_USERNAME }}</span>
+          <span class="ky2">password:</span> <span class="str">${{ secrets.DOCKER_PASSWORD }}</span>
+
+      - <span class="ky2">name:</span> Build Docker image
+        <span class="ky2">run:</span> docker build -t <span class="str">${{ secrets.DOCKER_USERNAME }}</span>/python-app:latest .
+
+      - <span class="ky2">name:</span> Push to Docker Hub
+        <span class="ky2">run:</span> docker push <span class="str">${{ secrets.DOCKER_USERNAME }}</span>/python-app:latest</pre></div>
+        </div>
+
+        <div class="out-label">Expected Output</div>
+        <div class="callout c-tip"><span class="callout-icon">✅</span><span>Every push to <strong>main</strong> triggers a green workflow run in the Actions tab and the image appears on Docker Hub.</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q5 -->
+    <div class="q-card" id="q5">
+      <div class="q-head">
+        <span class="q-num">Q 05</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Configure a Jenkins pipeline to automate the building and deployment of a Dockerized application from GitHub.</div>
+          <div class="q-tags">
+            <span class="tag t-jen">Jenkins</span>
+            <span class="tag t-docker">Docker</span>
+            <span class="tag t-hub">GitHub</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+
+        <div class="callout c-note"><span class="callout-icon">🐳</span><span><strong>Jenkins runs inside Docker</strong> — no Java installation needed on the host. The Docker socket is mounted so Jenkins can build and push images directly.</span></div>
+
+        <div class="step" style="margin-top:1rem">
+          <div class="step-label">Step 1 – Start Jenkins container</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmt"># Create a persistent volume for Jenkins data</span>
+<span class="cmd">docker volume create jenkins-data</span>
+
+<span class="cmt"># Run Jenkins (mounts Docker socket so it can build images)</span>
+<span class="cmd">docker run -d \
+  --name jenkins \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins-data:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  jenkins/jenkins:lts</span>
+
+<span class="cmt"># Get the initial admin password</span>
+<span class="cmd">docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword</span></pre></div>
+          <div class="callout c-info"><span class="callout-icon">ℹ️</span><span>Open <strong>http://localhost:8080</strong>, paste the password, install suggested plugins, then install the <strong>Docker Pipeline Plugin</strong> from Manage Plugins.</span></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 2 – Install Docker CLI inside Jenkins container</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">docker exec -u root jenkins bash -c \
+  "apt-get update && apt-get install -y docker.io"</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 3 – Jenkinsfile (place in root of GitHub repo)</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">groovy</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="fn">pipeline</span> {
+    agent any
+    <span class="fn">environment</span> {
+        IMAGE_NAME      = <span class="str">"myapp"</span>
+        DOCKER_HUB_USER = <span class="str">"&lt;your-dockerhub-username&gt;"</span>
+    }
+    <span class="fn">stages</span> {
+        stage(<span class="str">'Clone'</span>) {
+            steps {
+                git branch: <span class="str">'main'</span>,
+                    url: <span class="str">'https://github.com/&lt;username&gt;/&lt;repo&gt;.git'</span>
+            }
+        }
+        stage(<span class="str">'Build Image'</span>) {
+            steps {
+                sh <span class="str">'docker build -t $DOCKER_HUB_USER/$IMAGE_NAME:latest .'</span>
+            }
+        }
+        stage(<span class="str">'Push to Hub'</span>) {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: <span class="str">'dockerhub-creds'</span>,
+                    usernameVariable: <span class="str">'DOCKER_USER'</span>,
+                    passwordVariable: <span class="str">'DOCKER_PASS'</span>
+                )]) {
+                    sh <span class="str">'''
+                      echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                      docker push $DOCKER_HUB_USER/$IMAGE_NAME:latest
+                    '''</span>
+                }
+            }
+        }
+        stage(<span class="str">'Deploy'</span>) {
+            steps {
+                sh <span class="str">'docker run -d -p 5000:5000 $DOCKER_HUB_USER/$IMAGE_NAME:latest'</span>
+            }
+        }
+    }
+}</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 4 – Jenkins pipeline setup</div>
+          <div class="callout c-info"><span class="callout-icon">⚙️</span><span>
+            1. Jenkins → <strong>New Item</strong> → Pipeline<br>
+            2. Pipeline section → <em>Pipeline script from SCM</em> → Git → enter repo URL<br>
+            3. <strong>Manage Jenkins → Credentials</strong> → Add Docker Hub credentials with ID <code>dockerhub-creds</code><br>
+            4. Click <strong>Build Now</strong>
+          </span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q6 -->
+    <div class="q-card" id="q6">
+      <div class="q-head">
+        <span class="q-num">Q 06</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Use kubectl commands to create, scale, and manage Kubernetes resources like pods and deployments.</div>
+          <div class="q-tags">
+            <span class="tag t-k8s">Kubernetes</span>
+            <span class="tag t-k8s">kubectl</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+
+        <div class="step">
+          <div class="step-label">Step 1 – Create a deployment</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">kubectl create deployment myapp --image=nginx:latest</span>
+<span class="cmd">kubectl get deployments</span>
+<span class="cmd">kubectl get pods</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 2 – Scale the deployment</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmt"># Scale up to 3 replicas</span>
+<span class="cmd">kubectl scale deployment myapp --replicas=3</span>
+<span class="cmd">kubectl get pods</span>
+
+<span class="cmt"># Scale back down</span>
+<span class="cmd">kubectl scale deployment myapp --replicas=1</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 3 – Expose, inspect &amp; clean up</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">kubectl expose deployment myapp --port=80 --type=NodePort</span>
+<span class="cmd">kubectl get services</span>
+<span class="cmd">kubectl describe pod &lt;pod-name&gt;</span>
+<span class="cmd">kubectl logs &lt;pod-name&gt;</span>
+
+<span class="cmt"># Clean up</span>
+<span class="cmd">kubectl delete deployment myapp</span>
+<span class="cmd">kubectl delete service myapp</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 4 – Using a YAML manifest (deployment.yaml)</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">yaml</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="ky2">apiVersion:</span> apps/v1
+<span class="ky2">kind:</span> Deployment
+<span class="ky2">metadata:</span>
+  <span class="ky2">name:</span> myapp
+<span class="ky2">spec:</span>
+  <span class="ky2">replicas:</span> <span class="num">2</span>
+  <span class="ky2">selector:</span>
+    <span class="ky2">matchLabels:</span>
+      <span class="ky2">app:</span> myapp
+  <span class="ky2">template:</span>
+    <span class="ky2">metadata:</span>
+      <span class="ky2">labels:</span>
+        <span class="ky2">app:</span> myapp
+    <span class="ky2">spec:</span>
+      <span class="ky2">containers:</span>
+      - <span class="ky2">name:</span> myapp
+        <span class="ky2">image:</span> nginx:latest
+        <span class="ky2">ports:</span>
+        - <span class="ky2">containerPort:</span> <span class="num">80</span></pre></div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">kubectl apply -f deployment.yaml</span>
+<span class="cmd">kubectl get all</span></pre></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q7 -->
+    <div class="q-card" id="q7">
+      <div class="q-head">
+        <span class="q-num">Q 07</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Create a GitHub Actions pipeline to automatically build and push a Docker image of a Python app to Docker Hub.</div>
+          <div class="q-tags">
+            <span class="tag t-ci">GitHub Actions</span>
+            <span class="tag t-docker">Docker</span>
+            <span class="tag t-py">Python</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+        <div class="callout c-note"><span class="callout-icon">💡</span><span>Uses the official <strong>docker/build-push-action</strong> for best-practice multi-platform builds with Docker Buildx.</span></div>
+
+        <div class="step" style="margin-top:1rem">
+          <div class="step-label">.github/workflows/build-push.yml</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">yaml</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="ky2">name:</span> Docker Build &amp; Push
+
+<span class="ky2">on:</span>
+  <span class="ky2">push:</span>
+    <span class="ky2">branches:</span> [ main ]
+  <span class="ky2">pull_request:</span>
+    <span class="ky2">branches:</span> [ main ]
+
+<span class="ky2">jobs:</span>
+  <span class="ky2">docker:</span>
+    <span class="ky2">runs-on:</span> ubuntu-latest
+    <span class="ky2">steps:</span>
+      - <span class="ky2">uses:</span> actions/checkout@v3
+
+      - <span class="ky2">name:</span> Set up Docker Buildx
+        <span class="ky2">uses:</span> docker/setup-buildx-action@v3
+
+      - <span class="ky2">name:</span> Login to Docker Hub
+        <span class="ky2">uses:</span> docker/login-action@v3
+        <span class="ky2">with:</span>
+          <span class="ky2">username:</span> <span class="str">${{ secrets.DOCKER_USERNAME }}</span>
+          <span class="ky2">password:</span> <span class="str">${{ secrets.DOCKER_PASSWORD }}</span>
+
+      - <span class="ky2">name:</span> Build and push
+        <span class="ky2">uses:</span> docker/build-push-action@v5
+        <span class="ky2">with:</span>
+          <span class="ky2">context:</span> .
+          <span class="ky2">push:</span> <span class="kw">true</span>
+          <span class="ky2">tags:</span> <span class="str">${{ secrets.DOCKER_USERNAME }}</span>/python-app:latest</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q8 -->
+    <div class="q-card" id="q8">
+      <div class="q-head">
+        <span class="q-num">Q 08</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Containerise a Flask application using Docker.</div>
+          <div class="q-tags">
+            <span class="tag t-docker">Docker</span>
+            <span class="tag t-py">Flask</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+        <div class="callout c-info"><span class="callout-icon">ℹ️</span><span>This question focuses only on containerisation — no push to Docker Hub required (that's Q2).</span></div>
+
+        <div class="step" style="margin-top:1rem">
+          <div class="step-label">app.py</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">python</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="kw">from</span> flask <span class="kw">import</span> Flask
+app = Flask(__name__)
+
+<span class="fn">@app.route</span>(<span class="str">'/'</span>)
+<span class="kw">def</span> <span class="fn">index</span>():
+    <span class="kw">return</span> <span class="str">"&lt;h1&gt;Flask app running in Docker!&lt;/h1&gt;"</span>
+
+<span class="kw">if</span> __name__ == <span class="str">'__main__'</span>:
+    app.run(host=<span class="str">'0.0.0.0'</span>, port=<span class="num">5000</span>)</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Dockerfile</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">dockerfile</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="kw">FROM</span> python:3.11-slim
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> requirements.txt .
+<span class="kw">RUN</span> pip install --no-cache-dir -r requirements.txt
+<span class="kw">COPY</span> . .
+<span class="kw">EXPOSE</span> <span class="num">5000</span>
+<span class="kw">CMD</span> [<span class="str">"python"</span>, <span class="str">"app.py"</span>]</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Build &amp; run</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">docker build -t flask-container .</span>
+<span class="cmd">docker run -d -p 5000:5000 --name myflask flask-container</span>
+<span class="cmd">docker ps</span>
+<span class="cmt"># Visit http://localhost:5000</span></pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q9 -->
+    <div class="q-card" id="q9">
+      <div class="q-head">
+        <span class="q-num">Q 09</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Clone a GitHub repository, modify a file and push the changes back to the repository.</div>
+          <div class="q-tags">
+            <span class="tag t-git">Git</span>
+            <span class="tag t-hub">GitHub</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+
+        <div class="step">
+          <div class="step-label">Step 1 – Clone</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">git clone https://github.com/&lt;username&gt;/&lt;repo-name&gt;.git</span>
+<span class="cmd">cd &lt;repo-name&gt;</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 2 – Modify a file</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">echo "Updated content" >> README.md</span>
+<span class="cmd">cat README.md</span>
+<span class="cmd">git diff</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">Step 3 – Commit &amp; push</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">bash</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="cmd">git add README.md</span>
+<span class="cmd">git commit -m "docs: update README with new content"</span>
+<span class="cmd">git push origin main</span>
+<span class="cmd">git log --oneline -3</span></pre></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════ Q10 -->
+    <div class="q-card" id="q10">
+      <div class="q-head">
+        <span class="q-num">Q 10</span>
+        <div class="q-title-wrap">
+          <div class="q-title">Configure a GitHub Actions workflow to automatically build and test a Python application.</div>
+          <div class="q-tags">
+            <span class="tag t-ci">GitHub Actions</span>
+            <span class="tag t-py">Python</span>
+            <span class="tag t-py">pytest</span>
+          </div>
+        </div>
+      </div>
+      <div class="q-body">
+
+        <div class="step">
+          <div class="step-label">app.py</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">python</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="kw">def</span> <span class="fn">add</span>(a, b):
+    <span class="kw">return</span> a + b
+
+<span class="kw">def</span> <span class="fn">greet</span>(name):
+    <span class="kw">return</span> f<span class="str">"Hello, {name}!"</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">test_app.py</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">python</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="kw">from</span> app <span class="kw">import</span> add, greet
+
+<span class="kw">def</span> <span class="fn">test_add</span>():
+    <span class="kw">assert</span> add(<span class="num">2</span>, <span class="num">3</span>) == <span class="num">5</span>
+
+<span class="kw">def</span> <span class="fn">test_greet</span>():
+    <span class="kw">assert</span> greet(<span class="str">"World"</span>) == <span class="str">"Hello, World!"</span></pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">requirements.txt</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">text</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre>pytest</pre></div>
+        </div>
+
+        <div class="step">
+          <div class="step-label">.github/workflows/python-test.yml</div>
+          <div class="codeblock"><div class="cb-bar"><span class="cb-lang">yaml</span><button class="cb-copy" onclick="copyCode(this)">copy</button></div>
+<pre><span class="ky2">name:</span> Python Build &amp; Test
+
+<span class="ky2">on:</span>
+  <span class="ky2">push:</span>
+    <span class="ky2">branches:</span> [ main ]
+  <span class="ky2">pull_request:</span>
+    <span class="ky2">branches:</span> [ main ]
+
+<span class="ky2">jobs:</span>
+  <span class="ky2">build-test:</span>
+    <span class="ky2">runs-on:</span> ubuntu-latest
+    <span class="ky2">steps:</span>
+      - <span class="ky2">uses:</span> actions/checkout@v3
+
+      - <span class="ky2">name:</span> Set up Python
+        <span class="ky2">uses:</span> actions/setup-python@v4
+        <span class="ky2">with:</span>
+          <span class="ky2">python-version:</span> <span class="str">'3.11'</span>
+
+      - <span class="ky2">name:</span> Install dependencies
+        <span class="ky2">run:</span> pip install -r requirements.txt
+
+      - <span class="ky2">name:</span> Run tests
+        <span class="ky2">run:</span> pytest test_app.py -v</pre></div>
+        </div>
+
+        <div class="out-label">Expected Output</div>
+        <div class="callout c-tip"><span class="callout-icon">✅</span><span>GitHub Actions shows <strong>2 passed</strong> with green checkmarks. Every push to <code>main</code> automatically runs the tests.</span></div>
+
+      </div>
+    </div>
+
+    <a href="#top" class="back-top">↑ back to top</a>
+
+  </main>
+</div>
+
+<footer>
+  24CS2019 – DevOps Laboratory &nbsp;·&nbsp; Karunya Institute of Technology and Sciences &nbsp;·&nbsp; Division of Computer Science and Engineering
+</footer>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.codeblock').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 2000);
+  });
+}
+
+// Highlight active TOC item on scroll
+const cards = document.querySelectorAll('.q-card[id]');
+const links  = document.querySelectorAll('.toc-list a');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.style.background = '');
+      const a = document.querySelector(`.toc-list a[href="#${e.target.id}"]`);
+      if (a) a.style.background = 'var(--blue-lt)';
+    }
+  });
+}, { threshold: 0.3 });
+cards.forEach(c => obs.observe(c));
+</script>
+</body>
+</html>
